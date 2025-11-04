@@ -53,10 +53,14 @@
 User → Frontend → Cloudflare Worker
                         │
                         ├─→ GitHub OAuth
-                        │     └─→ Store access_token in KV
+                        │     ├─→ Encrypt token (AES-GCM)
+                        │     ├─→ Store in KV
+                        │     └─→ Backup to GitHub repo secrets
                         │
                         └─→ Gmail OAuth
-                              └─→ Store refresh_token in KV
+                              ├─→ Encrypt token (AES-GCM)
+                              ├─→ Store in KV
+                              └─→ Backup to GitHub repo secrets
 ```
 
 ### 2. Capsule Creation Flow
@@ -113,13 +117,17 @@ Recipient clicks magic link
 
 ### Cloudflare KV (Key-Value Store)
 
-| Key Pattern | Value | TTL |
-|-------------|-------|-----|
-| `github_token:{userId}` | GitHub access token | 90 days |
-| `gmail_token:{userId}` | Gmail refresh token | 90 days |
-| `user_session:{userId}` | Full user session JSON | 90 days |
-| `token:{tokenHash}` | Token mapping (repo + capsuleId) | None |
-| `pin_attempts:{tokenHash}` | Rate limit counter | 1 hour |
+| Key Pattern | Value | Encryption | TTL |
+|-------------|-------|------------|-----|
+| `github_token:{userId}` | GitHub access token | AES-GCM | None |
+| `gmail_token:{userId}` | Gmail refresh token | AES-GCM | None |
+| `user_session:{userId}` | Full user session JSON | AES-GCM | None |
+| `token:{tokenHash}` | Token mapping (repo + capsuleId) | No | None |
+| `pin_attempts:{tokenHash}` | Rate limit counter | No | 1 hour |
+
+**Encryption**: All sensitive tokens encrypted using AES-GCM with a master key stored in Cloudflare Workers environment variables.
+
+**Redundancy**: OAuth tokens also stored in GitHub repository secrets as encrypted backup.
 
 ### GitHub Repository Structure
 
@@ -170,7 +178,7 @@ timecapsule-storage-{uuid}/
 
 - **GitHub OAuth**: Grants access to create private repos and upload files
 - **Gmail OAuth**: Grants permission to send emails on behalf of user
-- **Session Storage**: Encrypted tokens stored in Cloudflare KV with 90-day expiry
+- **Session Storage**: Encrypted tokens stored in Cloudflare KV (no expiry for MVP)
 
 ### Authorization
 
@@ -185,6 +193,17 @@ timecapsule-storage-{uuid}/
 - **LFS Encryption**: Files tracked by Git LFS (binary storage)
 - **Token Mapping**: Separate KV store maps token hashes to repos
 - **No Plaintext**: Tokens and PINs never stored in plaintext
+
+### Encryption & Storage (MVP)
+
+- **Algorithm**: AES-GCM (256-bit) for all OAuth tokens
+- **Master Key**: Stored in Cloudflare Workers environment variables
+- **KV Storage**: Encrypted tokens stored indefinitely (no TTL)
+- **Redundancy**: Encrypted OAuth tokens backed up to GitHub repository secrets
+- **Recovery**: Can restore tokens from GitHub secrets if KV data lost
+- **Transparency**: Full security model documented in privacy policy
+
+**Privacy Policy**: All data handling, encryption methods, and token storage practices are documented in the public-facing privacy policy for user transparency.
 
 ## API Endpoints
 
