@@ -53,14 +53,14 @@
 User → Frontend → Cloudflare Worker
                         │
                         ├─→ GitHub OAuth
-                        │     ├─→ Encrypt token (AES-GCM)
-                        │     ├─→ Store in KV
-                        │     └─→ Backup to GitHub repo secrets
+                        │     ├─→ Encrypt token (AES-256-GCM)
+                        │     ├─→ Store encrypted in KV (no TTL)
+                        │     └─→ Backup encrypted to GitHub repo secrets
                         │
                         └─→ Gmail OAuth
-                              ├─→ Encrypt token (AES-GCM)
-                              ├─→ Store in KV
-                              └─→ Backup to GitHub repo secrets
+                              ├─→ Encrypt refresh token (AES-256-GCM)
+                              ├─→ Store encrypted in KV (no TTL)
+                              └─→ Backup encrypted to GitHub repo secrets
 ```
 
 ### 2. Capsule Creation Flow
@@ -119,15 +119,17 @@ Recipient clicks magic link
 
 | Key Pattern | Value | Encryption | TTL |
 |-------------|-------|------------|-----|
-| `github_token:{userId}` | GitHub access token | AES-GCM | None |
-| `gmail_token:{userId}` | Gmail refresh token | AES-GCM | None |
-| `user_session:{userId}` | Full user session JSON | AES-GCM | None |
+| `github_token:{userId}` | GitHub access token | AES-256-GCM | None |
+| `gmail_token:{userId}` | Gmail refresh token | AES-256-GCM | None |
+| `user_session:{userId}` | Full user session JSON | AES-256-GCM | None |
 | `token:{tokenHash}` | Token mapping (repo + capsuleId) | No | None |
 | `pin_attempts:{tokenHash}` | Rate limit counter | No | 1 hour |
 
-**Encryption**: All sensitive tokens encrypted using AES-GCM with a master key stored in Cloudflare Workers environment variables.
+**Encryption**: All sensitive tokens encrypted using AES-256-GCM with a master key stored in Cloudflare Workers environment variables.
 
-**Redundancy**: OAuth tokens also stored in GitHub repository secrets as encrypted backup.
+**Redundancy**: OAuth tokens also stored in GitHub repository secrets as encrypted backup for recovery.
+
+**Recovery**: Can restore tokens from GitHub secrets if KV data lost.
 
 ### GitHub Repository Structure
 
@@ -196,12 +198,15 @@ timecapsule-storage-{uuid}/
 
 ### Encryption & Storage (MVP)
 
-- **Algorithm**: AES-GCM (256-bit) for all OAuth tokens
-- **Master Key**: Stored in Cloudflare Workers environment variables
-- **KV Storage**: Encrypted tokens stored indefinitely (no TTL)
+- **Algorithm**: AES-256-GCM for all OAuth tokens
+- **Master Key**: Stored in Cloudflare Workers environment variables (`ENCRYPTION_KEY`)
+- **Key Generation**: 32-byte random hex key generated via `crypto.randomBytes(32)`
+- **KV Storage**: Encrypted tokens stored indefinitely (no TTL for reliability)
 - **Redundancy**: Encrypted OAuth tokens backed up to GitHub repository secrets
 - **Recovery**: Can restore tokens from GitHub secrets if KV data lost
 - **Transparency**: Full security model documented in privacy policy
+
+**Why No TTL**: Time capsules may unlock years in the future. Token expiry would break unlock functionality. Instead, we use encrypted indefinite storage with GitHub secrets as redundant backup.
 
 **Privacy Policy**: All data handling, encryption methods, and token storage practices are documented in the public-facing privacy policy for user transparency.
 
@@ -241,6 +246,7 @@ timecapsule-storage-{uuid}/
 - **Runtime**: V8 JavaScript/TypeScript
 - **Framework**: Hono (lightweight web framework)
 - **Storage**: Cloudflare KV (key-value store)
+- **Encryption**: Web Crypto API (AES-256-GCM)
 - **APIs**: 
   - GitHub REST API (@octokit/rest)
   - Gmail API (googleapis)

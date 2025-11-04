@@ -62,12 +62,16 @@
 2. **GitHub OAuth Flow**
 
    - Request scopes: `repo`, `workflow`
-   - Store access token in Workers KV: `github_token:{userId}`
+   - Encrypt access token using AES-256-GCM with `ENCRYPTION_KEY`
+   - Store encrypted token in Workers KV: `github_token:{userId}` (no TTL)
+   - Backup encrypted token to GitHub repo secrets
 
 3. **Gmail OAuth Flow**
 
    - Request scope: `https://www.googleapis.com/auth/gmail.send`
-   - Store refresh token in Workers KV: `gmail_token:{userId}`
+   - Encrypt refresh token using AES-256-GCM with `ENCRYPTION_KEY`
+   - Store encrypted token in Workers KV: `gmail_token:{userId}` (no TTL)
+   - Backup encrypted token to GitHub repo secrets
 
 4. **Auto-create GitHub Repo** (via GitHub API)
 
@@ -77,13 +81,18 @@
      - `.github/workflows/unlock-cron.yml` (see Phase 2)
      - `.gitattributes` (LFS config: `*.mp4 filter=lfs`, `*.mp3 filter=lfs`, `*.jpg filter=lfs`, `*.png filter=lfs`)
      - `capsules.json` (empty array: `[]`)
-   - Store GitHub secrets via API: `GMAIL_REFRESH_TOKEN`, `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`
+   - Store GitHub secrets via API:
+     - `GITHUB_ACCESS_TOKEN` (encrypted, for recovery)
+     - `GMAIL_REFRESH_TOKEN` (encrypted, for recovery & Actions)
+     - `GMAIL_CLIENT_ID`
+     - `GMAIL_CLIENT_SECRET`
 
 **Files to create:**
 
 - `cloudflare-worker/src/index.ts` (main Worker)
 - `cloudflare-worker/src/github.ts` (GitHub API helpers)
 - `cloudflare-worker/src/gmail.ts` (Gmail API helpers)
+- `cloudflare-worker/src/encryption.ts` (AES-256-GCM helpers for token encryption)
 - `cloudflare-worker/wrangler.toml` (config)
 
 ---
@@ -370,11 +379,24 @@
 1. Create Cloudflare account → Workers + KV namespace
 2. Create GitHub OAuth app (client ID/secret)
 3. Create Google OAuth app (Gmail API client ID/secret)
-4. Clone repo, install dependencies:
+4. Generate encryption key:
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+5. Clone repo, install dependencies:
    ```bash
    npm install -g wrangler
    cd cloudflare-worker && npm install
    cd ../frontend && npm install
+   ```
+6. Set environment variables/secrets:
+   ```bash
+   wrangler secret put ENCRYPTION_KEY
+   wrangler secret put GITHUB_OAUTH_CLIENT_ID
+   wrangler secret put GITHUB_OAUTH_CLIENT_SECRET
+   wrangler secret put GMAIL_CLIENT_ID
+   wrangler secret put GMAIL_CLIENT_SECRET
+   wrangler secret put FRONTEND_URL
    ```
 
 
@@ -388,13 +410,23 @@
 
 1. Deploy Worker: `wrangler publish`
 2. Deploy frontend: Push to GitHub → auto-deploy via Cloudflare Pages
-3. Set environment variables in Cloudflare dashboard (OAuth secrets, KV bindings)
+3. Set environment variables in Cloudflare dashboard:
+   - OAuth secrets (GitHub & Gmail)
+   - `ENCRYPTION_KEY` (32-byte hex, never commit to git)
+   - KV namespace bindings
+   - `FRONTEND_URL`
 
 ### Testing
 
 1. Unit tests for Worker API endpoints (Vitest)
 2. E2E tests for user flows (Playwright)
 3. Manual testing with real GitHub repo + Gmail sending
+4. Security testing:
+   - Verify tokens in KV are encrypted (not readable)
+   - Check GitHub repo has correct encrypted secrets
+   - Test token recovery from GitHub secrets
+   - Verify encryption key not in git
+   - Confirm no plaintext tokens stored anywhere
 
 ---
 
@@ -407,6 +439,7 @@ time-capsule/
 │   │   ├── index.ts              # Main Worker entry
 │   │   ├── github.ts             # GitHub API helpers
 │   │   ├── gmail.ts              # Gmail API helpers
+│   │   ├── encryption.ts         # AES-256-GCM token encryption
 │   │   ├── email-templates.ts   # Email HTML generators
 │   │   └── workflow-template.ts # GitHub Actions YAML generator
 │   ├── wrangler.toml             # Cloudflare config
@@ -452,6 +485,8 @@ time-capsule/
 - [ ] Magic link displays video player with controls
 - [ ] WhatsApp share button opens wa.me with pre-filled message
 - [ ] Storage meter shows accurate usage (X / 1GB)
+- [ ] All OAuth tokens encrypted in KV (AES-256-GCM)
+- [ ] Token recovery from GitHub secrets works if KV fails
 - [ ] No crashes, no data loss, email delivery >95%
 
 ---
