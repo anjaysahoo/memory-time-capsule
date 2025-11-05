@@ -1,4 +1,4 @@
-# Digital Time Capsule - Architecture Overview
+# Memory Time Capsule - Architecture Overview
 
 ## System Architecture
 
