@@ -546,6 +546,7 @@ mkdir -p docs
 **MCP Tools Required:**
 - `cloudflare-docs` - For KV API documentation and Web Crypto API references
 - `cloudflare-bindings` - For testing KV operations during development
+- `gcloud-storage` - For exploring alternative storage options and backup strategies (optional)
 
 ### Overview
 
@@ -2311,6 +2312,7 @@ app.post('/test/email', async (c) => {
 
 **MCP Tools Required:**
 - `github` - For GitHub Actions workflow syntax and secrets API
+- `gcloud-observability` - For setting up workflow monitoring and log aggregation (optional)
 
 ### Overview
 
@@ -2719,6 +2721,8 @@ if (githubToken) {
 **MCP Tools Required:**
 - `github` - For LFS upload and capsules.json management
 - `cloudflare-docs` - For request handling and file uploads
+- `gcloud-observability` - For monitoring upload performance and debugging failures
+- `gcloud-storage` - For backup storage or alternative large file hosting (optional)
 
 ### Overview
 
@@ -3215,6 +3219,7 @@ app.route('/api/capsule', capsule);
 **MCP Tools Required:**
 - `cloudflare-docs` - For rate limiting and request validation
 - `github` - For fetching repository content via API
+- `gcloud-observability` - For monitoring rate limiting and debugging PIN verification failures
 
 ### Overview
 
@@ -6200,7 +6205,10 @@ export default function ContentViewer({
 ## Phase 12: Final Integration & Deployment
 
 **MCP Tools Required:**
-- None (configuration and deployment)
+- `cloudflare-docs` - For deployment configuration and Pages setup
+- `gcloud-observability` - For production monitoring, log aggregation, and alerting setup
+- `gcloud` - For setting up centralized logging infrastructure (optional)
+- `gcloud-storage` - For backup and disaster recovery planning (optional)
 
 ### Overview
 
@@ -6606,12 +6614,14 @@ wrangler kv:key get "github_token:USER_ID" --binding=KV
 - Verify client IDs and secrets are correct
 - Check redirect URLs match exactly
 - Ensure scopes are properly requested
+- **Using gcloud-observability**: Query for all OAuth-related errors in the past 24 hours to identify patterns
 
 ### Email Sending Failures
 
 - Check Gmail API quota (100 emails/day per user)
 - Verify Gmail tokens are stored correctly in KV
 - Check refresh token is valid
+- **Using gcloud-observability**: Search for Gmail API error responses and track delivery success rate over time
 
 ### Capsule Not Unlocking
 
@@ -6619,6 +6629,8 @@ wrangler kv:key get "github_token:USER_ID" --binding=KV
 - Verify workflow has required secrets
 - Check workflow logs for errors
 - Ensure `capsules.json` is accessible
+- **Using gcloud-observability**: Query GitHub Actions workflow logs across all user repositories to find common failure patterns
+- **Using gcloud**: Use MCP to inspect GitHub Actions metrics and execution times
 
 ### Storage Issues
 
