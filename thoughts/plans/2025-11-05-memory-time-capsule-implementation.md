@@ -994,23 +994,23 @@ app.post('/test/kv', async (c) => {
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] TypeScript compiles without errors: `cd cloudflare-worker && npx tsc --noEmit`
-- [ ] Worker deploys successfully: `cd cloudflare-worker && npm run deploy`
-- [ ] Encryption test succeeds with sample data:
+- [x] TypeScript compiles without errors: `cd cloudflare-worker && npx tsc --noEmit`
+- [x] Worker deploys successfully: `cd cloudflare-worker && npm run deploy`
+- [x] Encryption test succeeds with sample data:
   ```bash
   curl -X POST https://your-worker-url.workers.dev/test/encryption \
     -H "Content-Type: application/json" \
     -d '{"plaintext":"test_oauth_token_12345"}'
   ```
   Response should have `"success": true` and `"match": true`
-- [ ] KV plain storage test succeeds:
+- [x] KV plain storage test succeeds:
   ```bash
   curl -X POST https://your-worker-url.workers.dev/test/kv \
     -H "Content-Type: application/json" \
     -d '{"key":"test:plain","value":"hello","encrypted":false}'
   ```
   Response should have `"success": true`
-- [ ] KV encrypted storage test succeeds:
+- [x] KV encrypted storage test succeeds:
   ```bash
   curl -X POST https://your-worker-url.workers.dev/test/kv \
     -H "Content-Type: application/json" \
@@ -1019,12 +1019,12 @@ app.post('/test/kv', async (c) => {
   Response should have `"success": true`
 
 #### Manual Verification:
-- [ ] Check KV dashboard shows encrypted data is not readable as plaintext
-- [ ] Verify encryption produces different ciphertext for same plaintext (due to random IV)
-- [ ] Test decryption with wrong key fails gracefully (returns error)
-- [ ] Confirm encrypted data in KV is JSON with fields: `ciphertext`, `iv`, `tag`
-- [ ] Test token generation produces 22-character base64url strings (16 bytes)
-- [ ] Verify SHA-256 hashes are 64 hex characters
+- [x] Check KV dashboard shows encrypted data is not readable as plaintext
+- [x] Verify encryption produces different ciphertext for same plaintext (due to random IV)
+- [x] Test decryption with wrong key fails gracefully (returns error)
+- [x] Confirm encrypted data in KV is JSON with fields: `ciphertext`, `iv`, `tag`
+- [x] Test token generation produces 22-character base64url strings (16 bytes)
+- [x] Verify SHA-256 hashes are 64 hex characters
 
 **Implementation Note**: After all automated tests pass and manual verification confirms encrypted data is properly stored in KV, proceed to Phase 3.
 
