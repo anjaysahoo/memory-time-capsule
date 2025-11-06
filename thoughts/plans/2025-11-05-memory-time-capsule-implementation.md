@@ -1619,38 +1619,38 @@ export interface Env {
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] TypeScript compiles without errors: `cd cloudflare-worker && npx tsc --noEmit`
-- [ ] Worker deploys successfully: `cd cloudflare-worker && npm run deploy`
-- [ ] Auth routes are mounted: `curl https://your-worker-url.workers.dev/api/auth/github/authorize` returns JSON with `authUrl`
-- [ ] Authorization URL format is correct (contains client_id, redirect_uri, scope, state)
-- [ ] Session endpoint returns 404 for non-existent user: `curl https://your-worker-url.workers.dev/api/auth/session/999999` returns 404
+- [x] TypeScript compiles without errors: `cd cloudflare-worker && npx tsc --noEmit`
+- [x] Worker deploys successfully: `cd cloudflare-worker && npm run deploy`
+- [x] Auth routes are mounted: `curl https://your-worker-url.workers.dev/api/auth/github/authorize` returns JSON with `authUrl`
+- [x] Authorization URL format is correct (contains client_id, redirect_uri, scope, state)
+- [x] Session endpoint returns 404 for non-existent user: `curl https://your-worker-url.workers.dev/api/auth/session/999999` returns 404
 
 #### Manual Verification:
-- [ ] Create GitHub OAuth App at https://github.com/settings/developers
+- [x] Create GitHub OAuth App at https://github.com/settings/developers
   - Application name: "Memory Time Capsule"
   - Homepage URL: `https://your-frontend-url.pages.dev` (or your actual domain)
   - Authorization callback URL: `https://your-worker-url.workers.dev/api/auth/github/callback`
   - Scopes: `repo`, `workflow`
-- [ ] Set GitHub OAuth credentials as secrets:
+- [x] Set GitHub OAuth credentials as secrets:
   ```bash
   wrangler secret put GITHUB_OAUTH_CLIENT_ID
   wrangler secret put GITHUB_OAUTH_CLIENT_SECRET
   ```
-- [ ] Update WORKER_URL secret if needed:
+- [x] Update WORKER_URL secret if needed:
   ```bash
   wrangler secret put WORKER_URL
   # Enter: https://your-worker-url.workers.dev
   ```
-- [ ] Redeploy worker: `npm run deploy`
-- [ ] Test full OAuth flow:
+- [x] Redeploy worker: `npm run deploy`
+- [x] Test full OAuth flow:
   1. Get auth URL: `curl https://your-worker-url.workers.dev/api/auth/github/authorize`
   2. Open URL in browser, authorize the app
   3. Verify redirect to frontend with `userId` and `success=true`
   4. Check KV dashboard: `github_token:{userId}` key exists with encrypted data
   5. Check GitHub: New private repo created (name: `timecapsule-storage-*`)
   6. Verify repo contains: `.gitattributes`, `capsules.json`, `README.md`, `.github/workflows/unlock-cron.yml`
-- [ ] Test session retrieval: `curl https://your-worker-url.workers.dev/api/auth/session/{userId}` returns user session with repo info
-- [ ] Verify encrypted token can be decrypted and used to access GitHub API
+- [x] Test session retrieval: `curl https://your-worker-url.workers.dev/api/auth/session/{userId}` returns user session with repo info
+- [x] Verify encrypted token can be decrypted and used to access GitHub API
 
 **Implementation Note**: After all tests pass and OAuth flow works end-to-end with repository creation, proceed to Phase 4 for Gmail OAuth integration.
 

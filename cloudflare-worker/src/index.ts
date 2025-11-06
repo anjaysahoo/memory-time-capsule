@@ -33,6 +33,12 @@ app.get('/health', (c) => {
   });
 });
 
+// Import routes
+import auth from './routes/auth.js';
+
+// Mount auth routes
+app.route('/api/auth', auth);
+
 // API routes (will be added in subsequent phases)
 app.get('/api', (c) => {
   return c.json({
