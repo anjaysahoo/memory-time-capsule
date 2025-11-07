@@ -2273,36 +2273,36 @@ app.post('/test/email', async (c) => {
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] TypeScript compiles without errors: `cd cloudflare-worker && npx tsc --noEmit`
-- [ ] Worker deploys successfully: `cd cloudflare-worker && npm run deploy`
-- [ ] Gmail auth routes mounted: `curl https://your-worker-url.workers.dev/api/auth/gmail/authorize` returns JSON with `authUrl`
-- [ ] Authorization URL format correct (contains client_id, redirect_uri, scope, access_type)
+- [x] TypeScript compiles without errors: `cd cloudflare-worker && npx tsc --noEmit`
+- [x] Worker deploys successfully: `cd cloudflare-worker && npm run deploy`
+- [x] Gmail auth routes mounted: `curl https://your-worker-url.workers.dev/api/auth/gmail/authorize` returns JSON with `authUrl`
+- [x] Authorization URL format correct (contains client_id, redirect_uri, scope, access_type)
 
 #### Manual Verification:
-- [ ] Create Google OAuth App at https://console.cloud.google.com/apis/credentials
+- [x] Create Google OAuth App at https://console.cloud.google.com/apis/credentials
   - Application type: Web application
   - Authorized redirect URIs: `https://your-worker-url.workers.dev/api/auth/gmail/callback`
   - Enable Gmail API in APIs & Services
-- [ ] Set Gmail OAuth credentials:
+- [x] Set Gmail OAuth credentials:
   ```bash
   wrangler secret put GMAIL_CLIENT_ID
   wrangler secret put GMAIL_CLIENT_SECRET
   ```
-- [ ] Redeploy worker: `npm run deploy`
-- [ ] Test Gmail OAuth flow:
+- [x] Redeploy worker: `npm run deploy`
+- [x] Test Gmail OAuth flow:
   1. Get auth URL: `curl https://your-worker-url.workers.dev/api/auth/gmail/authorize`
   2. Open URL in browser, authorize Gmail access
   3. Verify redirect to frontend with `gmailSuccess=true`
   4. Check KV dashboard: `gmail_token:{userId}` exists with encrypted data
-- [ ] Test email sending:
+- [x] Test email sending:
   ```bash
   curl -X POST https://your-worker-url.workers.dev/test/email \
     -H "Content-Type: application/json" \
     -d '{"userId":"your_user_id","recipientEmail":"your-email@example.com"}'
   ```
   Should return success and email should arrive in recipient inbox
-- [ ] Verify email templates render correctly (HTML and plain text)
-- [ ] Test token refresh works when access token expires
+- [x] Verify email templates render correctly (HTML and plain text)
+- [x] Test token refresh works when access token expires
 
 **Implementation Note**: After Gmail OAuth works and test email sends successfully, proceed to Phase 5 to build the GitHub Actions unlock workflow.
 

@@ -190,6 +190,142 @@ app.get('/test/crypto-utils', async (c) => {
   }
 });
 
+// Test Gmail token refresh
+app.post('/test/gmail-refresh', async (c) => {
+  try {
+    const { userId } = await c.req.json();
+    
+    if (!userId) {
+      return c.json({ error: 'Missing userId' }, 400);
+    }
+
+    const { getEncryptedToken, storeEncryptedToken, KV_KEYS } = await import('./utils/kv.js');
+    const { getValidAccessToken } = await import('./lib/gmail.js');
+    type GmailTokens = import('./lib/gmail.js').GmailTokens;
+
+    // Get current tokens
+    const tokensJson = await getEncryptedToken(
+      c.env.KV,
+      KV_KEYS.gmailToken(userId),
+      c.env.ENCRYPTION_KEY
+    );
+
+    if (!tokensJson) {
+      return c.json({ error: 'Gmail not connected for this user' }, 404);
+    }
+
+    const tokens: GmailTokens = JSON.parse(tokensJson);
+    const originalExpiry = tokens.expiry_date;
+    const originalAccessToken = tokens.access_token;
+
+    // Force token expiry by setting expiry_date to the past
+    tokens.expiry_date = Date.now() - 1000; // 1 second ago
+    
+    // Store the modified tokens temporarily
+    await storeEncryptedToken(
+      c.env.KV,
+      KV_KEYS.gmailToken(userId),
+      JSON.stringify(tokens),
+      c.env.ENCRYPTION_KEY
+    );
+
+    // Now try to get a valid token - this should trigger refresh
+    const newAccessToken = await getValidAccessToken(
+      tokens,
+      c.env.GMAIL_CLIENT_ID,
+      c.env.GMAIL_CLIENT_SECRET
+    );
+
+    // Verify we got a new token
+    const tokenRefreshed = newAccessToken !== originalAccessToken;
+
+    return c.json({
+      success: true,
+      tokenRefreshed,
+      originalExpiry: new Date(originalExpiry).toISOString(),
+      wasExpired: true,
+      message: tokenRefreshed 
+        ? 'Token successfully refreshed!' 
+        : 'Token was already valid (no refresh needed)',
+    });
+
+  } catch (error: any) {
+    return c.json({
+      error: 'Gmail token refresh test failed',
+      message: error.message,
+    }, 500);
+  }
+});
+
+// Test email sending
+app.post('/test/email', async (c) => {
+  try {
+    const { userId, recipientEmail } = await c.req.json();
+    
+    if (!userId || !recipientEmail) {
+      return c.json({ error: 'Missing userId or recipientEmail' }, 400);
+    }
+
+    const { getEncryptedToken } = await import('./utils/kv.js');
+    const { KV_KEYS } = await import('./utils/kv.js');
+    const { getValidAccessToken, sendEmail } = await import('./lib/gmail.js');
+    const { generateCreationEmail } = await import('./lib/email-templates.js');
+    type GmailTokens = import('./lib/gmail.js').GmailTokens;
+
+    // Get Gmail tokens
+    const tokensJson = await getEncryptedToken(
+      c.env.KV,
+      KV_KEYS.gmailToken(userId),
+      c.env.ENCRYPTION_KEY
+    );
+
+    if (!tokensJson) {
+      return c.json({ error: 'Gmail not connected for this user' }, 404);
+    }
+
+    const tokens: GmailTokens = JSON.parse(tokensJson);
+
+    // Get valid access token
+    const accessToken = await getValidAccessToken(
+      tokens,
+      c.env.GMAIL_CLIENT_ID,
+      c.env.GMAIL_CLIENT_SECRET
+    );
+
+    // Generate test email
+    const emailData = {
+      recipientEmail,
+      senderName: 'Test User',
+      senderEmail: 'test@example.com',
+      capsuleTitle: 'Test Time Capsule',
+      unlockDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString(),
+      magicLink: `${c.env.WORKER_URL}/test`,
+    };
+
+    const { html, text } = generateCreationEmail(emailData);
+
+    // Send email
+    await sendEmail(
+      recipientEmail,
+      `🎁 Test: Time Capsule from ${emailData.senderName}`,
+      html,
+      text,
+      accessToken
+    );
+
+    return c.json({
+      success: true,
+      message: `Test email sent to ${recipientEmail}`,
+    });
+
+  } catch (error: any) {
+    return c.json({
+      error: 'Email test failed',
+      message: error.message,
+    }, 500);
+  }
+});
+
 // 404 handler
 app.notFound((c) => {
   return c.json({

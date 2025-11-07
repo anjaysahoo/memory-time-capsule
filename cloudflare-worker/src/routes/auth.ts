@@ -6,8 +6,12 @@ import {
   createGitHubClient,
 } from '../lib/github.js';
 import { initializeRepository } from '../lib/repo-init.js';
-import { storeEncryptedToken, getEncryptedToken, storeJson, getJson } from '../utils/kv.js';
+import { storeEncryptedToken, getEncryptedToken, storeJson, getJson, KV_KEYS } from '../utils/kv.js';
 import { generateSecureToken } from '../utils/encryption.js';
+import {
+  exchangeCodeForGmailTokens,
+  GmailTokens,
+} from '../lib/gmail.js';
 
 // User session data stored in KV
 export interface UserSession {
@@ -26,6 +30,8 @@ export interface UserSession {
     html_url: string;
     clone_url: string;
   };
+  gmailConnected?: boolean;
+  gmailEmail?: string;
   createdAt: string;
 }
 
@@ -159,6 +165,89 @@ auth.get('/github/token/:userId', async (c) => {
   }
   
   return c.json({ token });
+});
+
+/**
+ * Gmail OAuth authorization URL
+ * GET /api/auth/gmail/authorize
+ */
+auth.get('/gmail/authorize', (c) => {
+  const redirectUri = `${c.env.WORKER_URL}/api/auth/gmail/callback`;
+  
+  const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+  authUrl.searchParams.set('client_id', c.env.GMAIL_CLIENT_ID);
+  authUrl.searchParams.set('redirect_uri', redirectUri);
+  authUrl.searchParams.set('response_type', 'code');
+  authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/gmail.send');
+  authUrl.searchParams.set('access_type', 'offline');
+  authUrl.searchParams.set('prompt', 'consent');
+  authUrl.searchParams.set('state', crypto.randomUUID());
+
+  return c.json({
+    authUrl: authUrl.toString(),
+  });
+});
+
+/**
+ * Gmail OAuth callback endpoint
+ * GET /api/auth/gmail/callback?code=xxx&state=xxx
+ */
+auth.get('/gmail/callback', async (c) => {
+  try {
+    const code = c.req.query('code');
+    const userId = c.req.query('state'); // Pass userId as state
+
+    if (!code) {
+      return c.json({ error: 'Missing authorization code' }, 400);
+    }
+
+    // Exchange code for tokens
+    const redirectUri = `${c.env.WORKER_URL}/api/auth/gmail/callback`;
+    const tokens = await exchangeCodeForGmailTokens(
+      code,
+      c.env.GMAIL_CLIENT_ID,
+      c.env.GMAIL_CLIENT_SECRET,
+      redirectUri
+    );
+
+    // Get existing user session
+    const session = await getJson<UserSession>(c.env.KV, KV_KEYS.userSession(userId || ''));
+    
+    if (!session) {
+      throw new Error('User session not found. Please connect GitHub first.');
+    }
+
+    // Store encrypted Gmail refresh token in KV
+    await storeEncryptedToken(
+      c.env.KV,
+      KV_KEYS.gmailToken(session.userId),
+      JSON.stringify(tokens),
+      c.env.ENCRYPTION_KEY
+    );
+
+    // Update user session
+    session.gmailConnected = true;
+    session.gmailEmail = session.githubUser.email || undefined;
+    await storeJson(c.env.KV, KV_KEYS.userSession(session.userId), session);
+
+    // Redirect to frontend with success
+    const frontendUrl = new URL(c.env.FRONTEND_URL);
+    frontendUrl.pathname = '/auth/callback';
+    frontendUrl.searchParams.set('userId', session.userId);
+    frontendUrl.searchParams.set('gmailSuccess', 'true');
+
+    return c.redirect(frontendUrl.toString());
+
+  } catch (error: any) {
+    console.error('Gmail OAuth error:', error);
+    
+    // Redirect to frontend with error
+    const frontendUrl = new URL(c.env.FRONTEND_URL);
+    frontendUrl.pathname = '/auth/callback';
+    frontendUrl.searchParams.set('error', error.message || 'Gmail OAuth failed');
+
+    return c.redirect(frontendUrl.toString());
+  }
 });
 
 export default auth;
