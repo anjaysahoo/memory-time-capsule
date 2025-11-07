@@ -238,6 +238,7 @@ auth.get('/gmail/callback', async (c) => {
     );
 
     // Store Gmail secrets in GitHub repository for Actions workflow
+    // Note: This is optional and only needed for automated unlock workflow (Phase 8)
     const githubToken = await getEncryptedToken(
       c.env.KV,
       KV_KEYS.githubToken(session.userId),
@@ -245,14 +246,19 @@ auth.get('/gmail/callback', async (c) => {
     );
 
     if (githubToken) {
-      const octokit = createGitHubClient(githubToken);
-      const [owner, repo] = session.repository.full_name.split('/');
+      try {
+        const octokit = createGitHubClient(githubToken);
+        const [owner, repo] = session.repository.full_name.split('/');
 
-      await Promise.all([
-        createRepositorySecret(octokit, owner, repo, 'GMAIL_REFRESH_TOKEN', tokens.refresh_token),
-        createRepositorySecret(octokit, owner, repo, 'GMAIL_CLIENT_ID', c.env.GMAIL_CLIENT_ID),
-        createRepositorySecret(octokit, owner, repo, 'GMAIL_CLIENT_SECRET', c.env.GMAIL_CLIENT_SECRET),
-      ]);
+        await Promise.all([
+          createRepositorySecret(octokit, owner, repo, 'GMAIL_REFRESH_TOKEN', tokens.refresh_token),
+          createRepositorySecret(octokit, owner, repo, 'GMAIL_CLIENT_ID', c.env.GMAIL_CLIENT_ID),
+          createRepositorySecret(octokit, owner, repo, 'GMAIL_CLIENT_SECRET', c.env.GMAIL_CLIENT_SECRET),
+        ]);
+      } catch (error) {
+        // Ignore errors - secrets are only needed for automated unlock workflow
+        console.warn('Failed to store GitHub secrets (non-critical):', error);
+      }
     }
 
     // Update user session

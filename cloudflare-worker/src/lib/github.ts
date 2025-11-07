@@ -108,6 +108,17 @@ export async function createRepository(
 }
 
 /**
+ * Convert UTF-8 string to base64 (handles all Unicode characters)
+ */
+function utf8ToBase64(str: string): string {
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(str);
+  // Convert Uint8Array to regular array then to binary string
+  const binary = String.fromCharCode(...bytes);
+  return btoa(binary);
+}
+
+/**
  * Create or update file in repository
  * 
  * @param octokit - Authenticated Octokit client
@@ -127,7 +138,7 @@ export async function createOrUpdateFile(
   message: string,
   sha?: string
 ): Promise<void> {
-  const contentBase64 = btoa(content);
+  const contentBase64 = utf8ToBase64(content);
 
   await octokit.repos.createOrUpdateFileContents({
     owner,
@@ -220,21 +231,33 @@ async function encryptSecretForGitHub(
   secretValue: string,
   publicKey: string
 ): Promise<string> {
-  // Import libsodium
-  const sodium = await import('libsodium-wrappers');
-  await sodium.ready;
-  
-  // Convert public key from base64 to Uint8Array
-  const publicKeyBytes = sodium.from_base64(publicKey, sodium.base64_variants.ORIGINAL);
-  
-  // Convert secret value to Uint8Array
-  const secretBytes = sodium.from_string(secretValue);
-  
-  // Encrypt using sealed box (anonymous encryption)
-  const encryptedBytes = sodium.crypto_box_seal(secretBytes, publicKeyBytes);
-  
-  // Convert to base64
-  return sodium.to_base64(encryptedBytes, sodium.base64_variants.ORIGINAL);
+  try {
+    // Import libsodium with proper initialization
+    const sodiumModule = await import('libsodium-wrappers');
+    await sodiumModule.ready;
+    
+    // Access the default export properly
+    const sodium = sodiumModule.default || sodiumModule;
+    
+    // Verify crypto_box_seal exists
+    if (typeof sodium.crypto_box_seal !== 'function') {
+      throw new Error('libsodium crypto_box_seal not available');
+    }
+    
+    // Convert public key from base64 to Uint8Array
+    const publicKeyBytes = sodium.from_base64(publicKey, sodium.base64_variants.ORIGINAL);
+    
+    // Convert secret value to Uint8Array
+    const secretBytes = sodium.from_string(secretValue);
+    
+    // Encrypt using sealed box (anonymous encryption)
+    const encryptedBytes = sodium.crypto_box_seal(secretBytes, publicKeyBytes);
+    
+    // Convert to base64
+    return sodium.to_base64(encryptedBytes, sodium.base64_variants.ORIGINAL);
+  } catch (error: any) {
+    throw new Error(`Failed to encrypt secret: ${error.message}`);
+  }
 }
 
 /**

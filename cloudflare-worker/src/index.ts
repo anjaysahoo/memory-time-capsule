@@ -35,9 +35,13 @@ app.get('/health', (c) => {
 
 // Import routes
 import auth from './routes/auth.js';
+import capsule from './routes/capsule.js';
 
 // Mount auth routes
 app.route('/api/auth', auth);
+
+// Mount capsule routes
+app.route('/api/capsule', capsule);
 
 // API routes (will be added in subsequent phases)
 app.get('/api', (c) => {
