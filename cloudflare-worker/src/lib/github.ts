@@ -214,18 +214,27 @@ export async function createRepositorySecret(
 
 /**
  * Encrypt secret value for GitHub Actions
- * Uses sodium's sealed box (requires sodium library or Web Crypto workaround)
- * 
- * For MVP, we'll store a placeholder and add proper encryption later
+ * Uses libsodium sealed box encryption
  */
 async function encryptSecretForGitHub(
   secretValue: string,
   publicKey: string
 ): Promise<string> {
-  // TODO: Implement proper libsodium sealed_box encryption
-  // For now, return base64 encoded value (will be replaced with proper encryption)
-  console.warn('GitHub secret encryption not implemented - using placeholder');
-  return btoa(secretValue);
+  // Import libsodium
+  const sodium = await import('libsodium-wrappers');
+  await sodium.ready;
+  
+  // Convert public key from base64 to Uint8Array
+  const publicKeyBytes = sodium.from_base64(publicKey, sodium.base64_variants.ORIGINAL);
+  
+  // Convert secret value to Uint8Array
+  const secretBytes = sodium.from_string(secretValue);
+  
+  // Encrypt using sealed box (anonymous encryption)
+  const encryptedBytes = sodium.crypto_box_seal(secretBytes, publicKeyBytes);
+  
+  // Convert to base64
+  return sodium.to_base64(encryptedBytes, sodium.base64_variants.ORIGINAL);
 }
 
 /**
