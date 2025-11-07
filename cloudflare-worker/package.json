@@ -9,14 +9,15 @@
     "tail": "wrangler tail"
   },
   "dependencies": {
-    "hono": "^4.0.0",
     "@octokit/rest": "^20.0.0",
-    "googleapis": "^128.0.0"
+    "googleapis": "^128.0.0",
+    "hono": "^4.0.0",
+    "libsodium-wrappers": "^0.7.15"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240620.0",
-    "wrangler": "^3.60.0",
-    "typescript": "^5.3.0"
+    "@types/libsodium-wrappers": "^0.7.14",
+    "typescript": "^5.3.0",
+    "wrangler": "^3.60.0"
   }
 }
-
