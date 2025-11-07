@@ -4,6 +4,7 @@ import {
   exchangeCodeForToken,
   getAuthenticatedUser,
   createGitHubClient,
+  createRepositorySecret,
 } from '../lib/github.js';
 import { initializeRepository } from '../lib/repo-init.js';
 import { storeEncryptedToken, getEncryptedToken, storeJson, getJson, KV_KEYS } from '../utils/kv.js';
@@ -86,7 +87,12 @@ auth.get('/github/callback', async (c) => {
     const githubUser = await getAuthenticatedUser(octokit);
     
     // Initialize repository with required files
-    const repo = await initializeRepository(accessToken, githubUser);
+    const repo = await initializeRepository(
+      accessToken,
+      githubUser,
+      c.env.GMAIL_CLIENT_ID,
+      c.env.GMAIL_CLIENT_SECRET
+    );
     
     // Generate user ID
     const userId = githubUser.id.toString();
@@ -169,9 +175,15 @@ auth.get('/github/token/:userId', async (c) => {
 
 /**
  * Gmail OAuth authorization URL
- * GET /api/auth/gmail/authorize
+ * GET /api/auth/gmail/authorize?userId=xxx
  */
 auth.get('/gmail/authorize', (c) => {
+  const userId = c.req.query('userId');
+  
+  if (!userId) {
+    return c.json({ error: 'userId parameter required' }, 400);
+  }
+  
   const redirectUri = `${c.env.WORKER_URL}/api/auth/gmail/callback`;
   
   const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
@@ -181,7 +193,7 @@ auth.get('/gmail/authorize', (c) => {
   authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/gmail.send');
   authUrl.searchParams.set('access_type', 'offline');
   authUrl.searchParams.set('prompt', 'consent');
-  authUrl.searchParams.set('state', crypto.randomUUID());
+  authUrl.searchParams.set('state', userId);
 
   return c.json({
     authUrl: authUrl.toString(),
@@ -224,6 +236,24 @@ auth.get('/gmail/callback', async (c) => {
       JSON.stringify(tokens),
       c.env.ENCRYPTION_KEY
     );
+
+    // Store Gmail secrets in GitHub repository for Actions workflow
+    const githubToken = await getEncryptedToken(
+      c.env.KV,
+      KV_KEYS.githubToken(session.userId),
+      c.env.ENCRYPTION_KEY
+    );
+
+    if (githubToken) {
+      const octokit = createGitHubClient(githubToken);
+      const [owner, repo] = session.repository.full_name.split('/');
+
+      await Promise.all([
+        createRepositorySecret(octokit, owner, repo, 'GMAIL_REFRESH_TOKEN', tokens.refresh_token),
+        createRepositorySecret(octokit, owner, repo, 'GMAIL_CLIENT_ID', c.env.GMAIL_CLIENT_ID),
+        createRepositorySecret(octokit, owner, repo, 'GMAIL_CLIENT_SECRET', c.env.GMAIL_CLIENT_SECRET),
+      ]);
+    }
 
     // Update user session
     session.gmailConnected = true;

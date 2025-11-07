@@ -7,6 +7,7 @@ import {
   GitHubUser,
   GitHubRepo,
 } from './github.js';
+import { generateUnlockWorkflow, generateUnlockScript } from './workflow-generator.js';
 
 /**
  * Initial .gitattributes content for LFS
@@ -48,65 +49,21 @@ This repository uses Git LFS (Large File Storage) to store media files efficient
 The free tier provides 1GB of storage.
 `;
 
-/**
- * GitHub Actions workflow template (will be enhanced in Phase 5)
- */
-const WORKFLOW_TEMPLATE = `name: Unlock Time Capsules
-
-on:
-  schedule:
-    # Run every hour at minute 0
-    - cron: '0 * * * *'
-  workflow_dispatch: # Allow manual trigger
-
-jobs:
-  unlock:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          lfs: true
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Run unlock script
-        run: node unlock-script.js
-        env:
-          GMAIL_CLIENT_ID: \${{ secrets.GMAIL_CLIENT_ID }}
-          GMAIL_CLIENT_SECRET: \${{ secrets.GMAIL_CLIENT_SECRET }}
-          GMAIL_REFRESH_TOKEN: \${{ secrets.GMAIL_REFRESH_TOKEN }}
-
-      - name: Commit changes
-        run: |
-          git config user.name "Time Capsule Bot"
-          git config user.email "bot@timecapsule.app"
-          git add capsules.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update capsule unlock status"
-          git push
-`;
-
-/**
- * Placeholder unlock script (will be enhanced in Phase 5)
- */
-const UNLOCK_SCRIPT_PLACEHOLDER = `// Placeholder unlock script
-// This will be replaced with full unlock logic in Phase 5
-console.log('Unlock script placeholder - will be implemented in Phase 5');
-`;
 
 /**
  * Initialize repository with all required files and configuration
  * 
  * @param accessToken - GitHub OAuth access token
  * @param user - GitHub user info
+ * @param gmailClientId - Gmail OAuth client ID (app-level credential)
+ * @param gmailClientSecret - Gmail OAuth client secret (app-level credential)
  * @returns Created repository info
  */
 export async function initializeRepository(
   accessToken: string,
-  user: GitHubUser
+  user: GitHubUser,
+  gmailClientId: string,
+  gmailClientSecret: string
 ): Promise<GitHubRepo> {
   const octokit = createGitHubClient(accessToken);
   
@@ -118,6 +75,10 @@ export async function initializeRepository(
   
   // Wait a bit for repo to be fully ready
   await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  // Generate workflow and unlock script with Gmail credentials
+  const workflow = generateUnlockWorkflow(gmailClientId, gmailClientSecret);
+  const unlockScript = generateUnlockScript();
   
   // Create initial files (in sequence to avoid conflicts)
   await createOrUpdateFile(
@@ -152,7 +113,7 @@ export async function initializeRepository(
     user.login,
     repo.name,
     '.github/workflows/unlock-cron.yml',
-    WORKFLOW_TEMPLATE,
+    workflow,
     'Add unlock cron workflow'
   );
   
@@ -161,8 +122,8 @@ export async function initializeRepository(
     user.login,
     repo.name,
     'unlock-script.js',
-    UNLOCK_SCRIPT_PLACEHOLDER,
-    'Add unlock script placeholder'
+    unlockScript,
+    'Add unlock script'
   );
   
   return repo;
