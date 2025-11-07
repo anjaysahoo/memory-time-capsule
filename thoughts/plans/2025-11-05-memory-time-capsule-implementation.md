@@ -2693,24 +2693,24 @@ if (githubToken) {
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] TypeScript compiles without errors: `cd cloudflare-worker && npx tsc --noEmit`
-- [ ] Worker deploys successfully: `cd cloudflare-worker && npm run deploy`
-- [ ] Workflow generator produces valid YAML (check syntax)
+- [x] TypeScript compiles without errors: `cd cloudflare-worker && npx tsc --noEmit`
+- [x] Worker deploys successfully: `cd cloudflare-worker && npm run deploy`
+- [x] Workflow generator produces valid YAML (check syntax)
 
 #### Manual Verification:
-- [ ] After GitHub + Gmail OAuth, check user's repository contains:
+- [x] After GitHub + Gmail OAuth, check user's repository contains:
   - `.github/workflows/unlock-cron.yml` (not placeholder)
   - `unlock-script.js` (full unlock logic)
-- [ ] Check repository secrets exist:
+- [x] Check repository secrets exist:
   - Navigate to repo Settings → Secrets and variables → Actions
   - Verify: `GMAIL_REFRESH_TOKEN`, `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`
-- [ ] Test workflow manually:
+- [x] Test workflow manually:
   1. Go to repository → Actions tab
   2. Click "Unlock Time Capsules" workflow
   3. Click "Run workflow" button
   4. Check workflow runs successfully (even if no capsules to unlock)
-- [ ] Verify workflow cron schedule is set (hourly at minute 0)
-- [ ] Check workflow logs show "Checking X capsules" message
+- [x] Verify workflow cron schedule is set (hourly at minute 0)
+- [x] Check workflow logs show "Checking X capsules" message
 
 **Implementation Note**: After workflow is deployed and can run successfully, proceed to Phase 6 to implement capsule creation endpoints.
 
