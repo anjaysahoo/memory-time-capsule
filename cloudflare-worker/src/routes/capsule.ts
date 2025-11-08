@@ -7,6 +7,13 @@ import { generateSecureToken, sha256Hash } from '../utils/encryption.js';
 import { Capsule, CapsuleMetadata, CONTENT_LIMITS, ALLOWED_MIME_TYPES } from '../types/capsule.js';
 import { getValidAccessToken, sendEmail, GmailTokens } from '../lib/gmail.js';
 import { generateCreationEmail } from '../lib/email-templates.js';
+import {
+  getAllCapsules,
+  findCapsuleByTokenHash,
+  getContentUrl,
+  sanitizeCapsule,
+} from '../lib/capsule-retrieval.js';
+import { checkPinRateLimit, incrementPinAttempts } from '../utils/rate-limit.js';
 
 const capsule = new Hono<{ Bindings: Env }>();
 
@@ -211,6 +218,349 @@ capsule.post('/create', async (c) => {
     console.error('Capsule creation error:', error);
     return c.json({
       error: 'Failed to create capsule',
+      message: error.message,
+    }, 500);
+  }
+});
+
+/**
+ * Get capsule by magic token
+ * Returns metadata only (no content URL until PIN verified)
+ */
+capsule.get('/view/:token', async (c) => {
+  try {
+    const token = c.req.param('token');
+    
+    if (!token) {
+      return c.json({ error: 'Missing token' }, 400);
+    }
+
+    // Hash the token to lookup
+    const tokenHash = await sha256Hash(token);
+
+    // Get token mapping from KV
+    const mapping = await getJson<any>(c.env.KV, KV_KEYS.tokenToRepo(tokenHash));
+    
+    if (!mapping) {
+      return c.json({ error: 'Capsule not found' }, 404);
+    }
+
+    // Get GitHub token
+    const githubToken = await getEncryptedToken(
+      c.env.KV,
+      KV_KEYS.githubToken(mapping.userId),
+      c.env.ENCRYPTION_KEY
+    );
+
+    if (!githubToken) {
+      return c.json({ error: 'Access token not found' }, 500);
+    }
+
+    // Fetch capsule from repository
+    const octokit = createGitHubClient(githubToken);
+    const [owner, repo] = mapping.repoFullName.split('/');
+    const capsule = await findCapsuleByTokenHash(octokit, owner, repo, tokenHash);
+
+    if (!capsule) {
+      return c.json({ error: 'Capsule not found in repository' }, 404);
+    }
+
+    // Check unlock status
+    const now = Math.floor(Date.now() / 1000);
+    const isUnlocked = capsule.unlockAt <= now && capsule.unlockEmailSent;
+    const isPending = capsule.unlockAt <= now && !capsule.unlockEmailSent;
+
+    // Check rate limiting for unlocked capsules
+    let rateLimitInfo = null;
+    if (isUnlocked) {
+      const rateLimit = await checkPinRateLimit(c.env.KV, tokenHash);
+      rateLimitInfo = {
+        remaining: rateLimit.remaining,
+        exceeded: rateLimit.exceeded,
+      };
+    }
+
+    return c.json({
+      capsule: sanitizeCapsule(capsule),
+      status: {
+        unlocked: isUnlocked,
+        pending: isPending,
+        requiresPin: isUnlocked && !!capsule.pin,
+      },
+      rateLimit: rateLimitInfo,
+    });
+
+  } catch (error: any) {
+    console.error('Capsule retrieval error:', error);
+    return c.json({
+      error: 'Failed to retrieve capsule',
+      message: error.message,
+    }, 500);
+  }
+});
+
+/**
+ * Verify PIN and return content access URL
+ */
+capsule.post('/view/:token/verify-pin', async (c) => {
+  try {
+    const token = c.req.param('token');
+    const { pin } = await c.req.json();
+
+    if (!token || !pin) {
+      return c.json({ error: 'Missing token or PIN' }, 400);
+    }
+
+    // Validate PIN format (4 digits)
+    if (!/^\d{4}$/.test(pin)) {
+      return c.json({ error: 'Invalid PIN format (must be 4 digits)' }, 400);
+    }
+
+    // Hash the token to lookup
+    const tokenHash = await sha256Hash(token);
+
+    // Check rate limiting
+    const rateLimit = await checkPinRateLimit(c.env.KV, tokenHash);
+    
+    if (rateLimit.exceeded) {
+      return c.json({
+        error: 'Too many PIN attempts',
+        message: 'Please try again in 1 hour',
+        remaining: 0,
+      }, 429);
+    }
+
+    // Get token mapping from KV
+    const mapping = await getJson<any>(c.env.KV, KV_KEYS.tokenToRepo(tokenHash));
+    
+    if (!mapping) {
+      return c.json({ error: 'Capsule not found' }, 404);
+    }
+
+    // Get GitHub token
+    const githubToken = await getEncryptedToken(
+      c.env.KV,
+      KV_KEYS.githubToken(mapping.userId),
+      c.env.ENCRYPTION_KEY
+    );
+
+    if (!githubToken) {
+      return c.json({ error: 'Access token not found' }, 500);
+    }
+
+    // Fetch capsule from repository
+    const octokit = createGitHubClient(githubToken);
+    const [owner, repo] = mapping.repoFullName.split('/');
+    const capsule = await findCapsuleByTokenHash(octokit, owner, repo, tokenHash);
+
+    if (!capsule) {
+      return c.json({ error: 'Capsule not found' }, 404);
+    }
+
+    // Verify capsule is unlocked
+    const now = Math.floor(Date.now() / 1000);
+    if (capsule.unlockAt > now || !capsule.unlockEmailSent) {
+      return c.json({ error: 'Capsule not yet unlocked' }, 403);
+    }
+
+    // Hash provided PIN and compare
+    const pinHash = await sha256Hash(pin);
+    
+    if (pinHash !== capsule.pinHash) {
+      // Increment failed attempt counter
+      await incrementPinAttempts(c.env.KV, tokenHash);
+      const newRateLimit = await checkPinRateLimit(c.env.KV, tokenHash);
+
+      return c.json({
+        error: 'Incorrect PIN',
+        remaining: newRateLimit.remaining,
+      }, 401);
+    }
+
+    // PIN verified! Generate content URL
+    let contentUrl = null;
+    if (capsule.filePath) {
+      contentUrl = getContentUrl(c.env.WORKER_URL, tokenHash);
+    }
+
+    // Update viewed timestamp (TODO: implement updateCapsuleMetadata helper)
+    // For now, just return the data
+
+    return c.json({
+      success: true,
+      capsule: {
+        ...sanitizeCapsule(capsule, true),
+        textContent: capsule.textContent, // Include text content after verification
+      },
+      contentUrl,
+    });
+
+  } catch (error: any) {
+    console.error('PIN verification error:', error);
+    return c.json({
+      error: 'PIN verification failed',
+      message: error.message,
+    }, 500);
+  }
+});
+
+/**
+ * Proxy endpoint to fetch capsule content from GitHub
+ * This handles authentication with GitHub's raw content API
+ */
+capsule.get('/content/:tokenHash', async (c) => {
+  try {
+    const tokenHash = c.req.param('tokenHash');
+
+    // Get token mapping from KV
+    const mapping = await getJson<any>(c.env.KV, KV_KEYS.tokenToRepo(tokenHash));
+    
+    if (!mapping) {
+      return c.json({ error: 'Content not found' }, 404);
+    }
+
+    // Get GitHub token
+    const githubToken = await getEncryptedToken(
+      c.env.KV,
+      KV_KEYS.githubToken(mapping.userId),
+      c.env.ENCRYPTION_KEY
+    );
+
+    if (!githubToken) {
+      return c.json({ error: 'Access token not found' }, 500);
+    }
+
+    // Fetch capsule from repository
+    const octokit = createGitHubClient(githubToken);
+    const [owner, repo] = mapping.repoFullName.split('/');
+    const capsule = await findCapsuleByTokenHash(octokit, owner, repo, tokenHash);
+
+    if (!capsule || !capsule.filePath) {
+      return c.json({ error: 'Content not found' }, 404);
+    }
+
+    // Verify capsule is unlocked
+    const now = Math.floor(Date.now() / 1000);
+    if (capsule.unlockAt > now || !capsule.unlockEmailSent) {
+      return c.json({ error: 'Content not yet available' }, 403);
+    }
+
+    // Fetch content from GitHub with proper authentication
+    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/${capsule.filePath}`;
+    const response = await fetch(rawUrl, {
+      headers: {
+        'Authorization': `token ${githubToken}`,
+        'Accept': 'application/vnd.github.v3.raw',
+      },
+    });
+
+    if (!response.ok) {
+      console.error('GitHub content fetch failed:', response.status, response.statusText);
+      return c.json({ error: 'Failed to fetch content from repository' }, 500);
+    }
+
+    // Determine content type from file extension
+    const extension = capsule.filePath.split('.').pop()?.toLowerCase();
+    const contentTypeMap: Record<string, string> = {
+      'mp4': 'video/mp4',
+      'webm': 'video/webm',
+      'mp3': 'audio/mpeg',
+      'm4a': 'audio/mp4',
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+    };
+    const contentType = contentTypeMap[extension || ''] || 'application/octet-stream';
+
+    // Stream the content back to client
+    return new Response(response.body, {
+      headers: {
+        'Content-Type': contentType,
+        'Content-Disposition': `inline; filename="${capsule.id}.${extension}"`,
+        'Cache-Control': 'private, max-age=3600',
+      },
+    });
+
+  } catch (error: any) {
+    console.error('Content proxy error:', error);
+    return c.json({
+      error: 'Failed to fetch content',
+      message: error.message,
+    }, 500);
+  }
+});
+
+/**
+ * Get user's dashboard data (all capsules + storage)
+ */
+capsule.get('/dashboard/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId');
+
+    // Get user session
+    const session = await getJson<any>(c.env.KV, KV_KEYS.userSession(userId));
+    if (!session) {
+      return c.json({ error: 'User session not found' }, 404);
+    }
+
+    // Get GitHub token
+    const githubToken = await getEncryptedToken(
+      c.env.KV,
+      KV_KEYS.githubToken(userId),
+      c.env.ENCRYPTION_KEY
+    );
+
+    if (!githubToken) {
+      return c.json({ error: 'GitHub token not found' }, 404);
+    }
+
+    // Fetch all capsules from repository
+    const octokit = createGitHubClient(githubToken);
+    const [owner, repo] = session.repository.full_name.split('/');
+    const capsules = await getAllCapsules(octokit, owner, repo);
+
+    // Get storage usage
+    const storageUsed = await getStorageUsage(octokit, owner, repo);
+    const storageLimit = 1024 * 1024 * 1024; // 1GB
+
+    // Categorize capsules
+    const now = Math.floor(Date.now() / 1000);
+    const categorized = {
+      pending: capsules.filter(c => c.unlockAt > now),
+      unlocked: capsules.filter(c => c.unlockAt <= now && c.unlockEmailSent),
+      failed: capsules.filter(c => c.unlockAt <= now && !c.unlockEmailSent),
+    };
+
+    return c.json({
+      user: {
+        id: userId,
+        name: session.githubUser.name || session.githubUser.login,
+        email: session.githubUser.email,
+        avatar: session.githubUser.avatar_url,
+      },
+      storage: {
+        used: storageUsed,
+        limit: storageLimit,
+        percentage: Math.round((storageUsed / storageLimit) * 100),
+      },
+      capsules: {
+        total: capsules.length,
+        pending: categorized.pending.length,
+        unlocked: categorized.unlocked.length,
+        failed: categorized.failed.length,
+      },
+      capsuleList: capsules.map(c => sanitizeCapsule(c)),
+      repository: {
+        name: session.repository.name,
+        url: session.repository.html_url,
+      },
+    });
+
+  } catch (error: any) {
+    console.error('Dashboard fetch error:', error);
+    return c.json({
+      error: 'Failed to fetch dashboard data',
       message: error.message,
     }, 500);
   }
