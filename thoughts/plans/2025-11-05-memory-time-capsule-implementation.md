@@ -4381,18 +4381,568 @@ Create similar placeholder files for:
   - [x] Verify zustand store persists (check localStorage for 'auth-storage')
 - [x] Test responsive layout on mobile viewport
 
-**Implementation Note**: After frontend foundation is set up and running, proceed to Phase 9 to implement authentication and dashboard pages.
+**Implementation Note**: After frontend foundation is set up and running, proceed to Phase 8.5 to set up Shadcn UI component library.
 
 ---
 
-## Phase 9: Frontend Auth & Dashboard
+## Phase 8.5: Shadcn UI Setup
+
+**MCP Tools Required:**
+- None (frontend setup)
+
+### Overview
+
+Install and configure Shadcn UI component library for the React frontend. Shadcn provides a collection of re-usable, accessible, and customizable components built on Radix UI and styled with Tailwind CSS. This will replace custom CSS classes with production-ready components and improve UI consistency.
+
+### Changes Required
+
+#### 1. Install Shadcn UI Dependencies
+
+**Directory**: `frontend/`
+
+```bash
+cd frontend
+
+# Install required dependencies
+npm install class-variance-authority clsx tailwind-merge
+npm install lucide-react
+npm install @radix-ui/react-slot @radix-ui/react-dialog @radix-ui/react-alert-dialog
+npm install @radix-ui/react-label @radix-ui/react-separator @radix-ui/react-progress
+```
+
+#### 2. Configure path aliases
+
+**File**: `frontend/tsconfig.json` (verify paths are set)
+
+Ensure the paths configuration includes:
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+**File**: `frontend/vite.config.ts` (verify alias is set)
+
+Already configured in Phase 8, verify it includes:
+```typescript
+resolve: {
+  alias: {
+    '@': path.resolve(__dirname, './src'),
+  },
+}
+```
+
+#### 3. Create utility functions
+
+**File**: `frontend/src/lib/utils.ts`
+
+```typescript
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+```
+
+#### 4. Update Tailwind Configuration
+
+**File**: `frontend/tailwind.config.js` (update)
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: ["class"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+          50: '#f5f3ff',
+          100: '#ede9fe',
+          200: '#ddd6fe',
+          300: '#c4b5fd',
+          400: '#a78bfa',
+          500: '#8b5cf6',
+          600: '#7c3aed',
+          700: '#6d28d9',
+          800: '#5b21b6',
+          900: '#4c1d95',
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+}
+```
+
+#### 5. Install tailwindcss-animate
+
+```bash
+npm install tailwindcss-animate
+```
+
+#### 6. Add CSS Variables
+
+**File**: `frontend/src/index.css` (update)
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262.1 83.3% 57.8%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 262.1 83.3% 57.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+```
+
+#### 7. Initialize Shadcn UI Components
+
+Create the components directory structure:
+
+```bash
+mkdir -p frontend/src/components/ui
+```
+
+#### 8. Add Core Shadcn Components
+
+**File**: `frontend/src/components/ui/button.tsx`
+
+```typescript
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
+```
+
+**File**: `frontend/src/components/ui/card.tsx`
+
+```typescript
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+const Card = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      className
+    )}
+    {...props}
+  />
+))
+Card.displayName = "Card"
+
+const CardHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    {...props}
+  />
+))
+CardHeader.displayName = "CardHeader"
+
+const CardTitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <h3
+    ref={ref}
+    className={cn(
+      "text-2xl font-semibold leading-none tracking-tight",
+      className
+    )}
+    {...props}
+  />
+))
+CardTitle.displayName = "CardTitle"
+
+const CardDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+))
+CardDescription.displayName = "CardDescription"
+
+const CardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+))
+CardContent.displayName = "CardContent"
+
+const CardFooter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex items-center p-6 pt-0", className)}
+    {...props}
+  />
+))
+CardFooter.displayName = "CardFooter"
+
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+```
+
+**File**: `frontend/src/components/ui/alert.tsx`
+
+```typescript
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const alertVariants = cva(
+  "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
+  {
+    variants: {
+      variant: {
+        default: "bg-background text-foreground",
+        destructive:
+          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+const Alert = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
+>(({ className, variant, ...props }, ref) => (
+  <div
+    ref={ref}
+    role="alert"
+    className={cn(alertVariants({ variant }), className)}
+    {...props}
+  />
+))
+Alert.displayName = "Alert"
+
+const AlertTitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <h5
+    ref={ref}
+    className={cn("mb-1 font-medium leading-none tracking-tight", className)}
+    {...props}
+  />
+))
+AlertTitle.displayName = "AlertTitle"
+
+const AlertDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("text-sm [&_p]:leading-relaxed", className)}
+    {...props}
+  />
+))
+AlertDescription.displayName = "AlertDescription"
+
+export { Alert, AlertTitle, AlertDescription }
+```
+
+**File**: `frontend/src/components/ui/progress.tsx`
+
+```typescript
+import * as React from "react"
+import * as ProgressPrimitive from "@radix-ui/react-progress"
+
+import { cn } from "@/lib/utils"
+
+const Progress = React.forwardRef<
+  React.ElementRef<typeof ProgressPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
+>(({ className, value, ...props }, ref) => (
+  <ProgressPrimitive.Root
+    ref={ref}
+    className={cn(
+      "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
+      className
+    )}
+    {...props}
+  >
+    <ProgressPrimitive.Indicator
+      className="h-full w-full flex-1 bg-primary transition-all"
+      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+    />
+  </ProgressPrimitive.Root>
+))
+Progress.displayName = ProgressPrimitive.Root.displayName
+
+export { Progress }
+```
+
+**File**: `frontend/src/components/ui/separator.tsx`
+
+```typescript
+import * as React from "react"
+import * as SeparatorPrimitive from "@radix-ui/react-separator"
+
+import { cn } from "@/lib/utils"
+
+const Separator = React.forwardRef<
+  React.ElementRef<typeof SeparatorPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>
+>(
+  (
+    { className, orientation = "horizontal", decorative = true, ...props },
+    ref
+  ) => (
+    <SeparatorPrimitive.Root
+      ref={ref}
+      decorative={decorative}
+      orientation={orientation}
+      className={cn(
+        "shrink-0 bg-border",
+        orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
+        className
+      )}
+      {...props}
+    />
+  )
+)
+Separator.displayName = SeparatorPrimitive.Root.displayName
+
+export { Separator }
+```
+
+### Success Criteria
+
+#### Automated Verification:
+- [ ] All dependencies install successfully: `cd frontend && npm install`
+- [ ] TypeScript compiles without errors: `npm run build`
+- [ ] Development server starts: `npm run dev`
+- [ ] No console errors on page load
+
+#### Manual Verification:
+- [ ] Verify Shadcn components render correctly:
+  - Import Button component and verify it renders with variants
+  - Import Card component and verify it renders with shadow
+  - Import Alert component and verify it renders with proper styling
+- [ ] Test utility function:
+  - Import `cn` from `@/lib/utils`
+  - Verify it merges Tailwind classes correctly
+- [ ] Verify Tailwind CSS variables:
+  - Check browser devtools for CSS custom properties
+  - Verify `--primary`, `--background`, etc. are defined
+- [ ] Test component variants:
+  - Button: default, destructive, outline, secondary, ghost, link
+  - Button sizes: default, sm, lg, icon
+  - Alert: default, destructive
+
+**Implementation Note**: After Shadcn UI is set up and components are verified working, proceed to Phase 9 to rebuild authentication and dashboard pages using Shadcn components.
+
+---
+
+## Phase 9: Frontend Auth & Dashboard (with Shadcn UI)
 
 **MCP Tools Required:**
 - None (frontend implementation)
 
 ### Overview
 
-Build the authentication flow pages (GitHub and Gmail OAuth), callback handler, and dashboard page displaying user's capsules with storage usage. This enables users to connect their accounts and view their time capsules.
+Build the authentication flow pages (GitHub and Gmail OAuth), callback handler, and dashboard page displaying user's capsules with storage usage using **Shadcn UI components**. This enables users to connect their accounts and view their time capsules with a polished, accessible UI.
+
+**Key Changes from Original Plan:**
+- Replace custom `btn`, `card`, etc. classes with Shadcn `<Button>`, `<Card>` components
+- Use Shadcn `<Alert>` for error messages instead of custom styled divs
+- Use Shadcn `<Progress>` for storage meter
+- Leverage Radix UI primitives for accessibility
+- Maintain consistent design system with CSS variables
 
 ### Changes Required
 
@@ -4403,35 +4953,41 @@ Build the authentication flow pages (GitHub and Gmail OAuth), callback handler, 
 ```typescript
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { authService } from '@/api/services';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function Auth() {
   const [loading, setLoading] = useState<'github' | 'gmail' | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleGitHubAuth = async () => {
     try {
+      setError(null);
       setLoading('github');
       const authUrl = await authService.getGitHubAuthUrl();
       // Redirect to GitHub OAuth
       window.location.href = authUrl;
     } catch (error) {
       console.error('GitHub auth error:', error);
-      alert('Failed to start GitHub authentication');
+      setError('Failed to start GitHub authentication');
       setLoading(null);
     }
   };
 
   const handleGmailAuth = async () => {
     try {
+      setError(null);
       setLoading('gmail');
       const authUrl = await authService.getGmailAuthUrl();
       // Redirect to Gmail OAuth
       window.location.href = authUrl;
     } catch (error) {
       console.error('Gmail auth error:', error);
-      alert('Failed to start Gmail authentication');
+      setError('Failed to start Gmail authentication');
       setLoading(null);
     }
   };
@@ -4441,42 +4997,62 @@ export default function Auth() {
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Connect Your Accounts</h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-muted-foreground">
             We need access to GitHub (for storage) and Gmail (for sending emails).
           </p>
         </div>
 
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         <div className="space-y-6">
           {/* GitHub Connection Card */}
-          <div className="card">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">📁</span>
+          <Card>
+            <CardHeader>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">📁</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <CardTitle>GitHub</CardTitle>
+                  <CardDescription className="mt-2">
+                    We'll create a private repository to store your time capsule content.
+                    You get 1GB of free storage.
+                  </CardDescription>
                 </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold mb-2">GitHub</h3>
-                <p className="text-gray-600 mb-4">
-                  We'll create a private repository to store your time capsule content.
-                  You get 1GB of free storage.
-                </p>
-                <ul className="text-sm text-gray-600 space-y-1 mb-4">
-                  <li>✓ All content stored in your private repository</li>
-                  <li>✓ You maintain full ownership of your data</li>
-                  <li>✓ Automatic backups via Git history</li>
-                </ul>
-                <button
-                  onClick={handleGitHubAuth}
-                  disabled={loading !== null}
-                  className="btn btn-primary flex items-center gap-2"
-                >
-                  {loading === 'github' ? (
-                    <>
-                      <LoadingSpinner size="sm" />
-                      <span>Connecting...</span>
-                    </>
-                  ) : (
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm text-muted-foreground space-y-2 mb-4">
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>All content stored in your private repository</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>You maintain full ownership of your data</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>Automatic backups via Git history</span>
+                </li>
+              </ul>
+              <Button
+                onClick={handleGitHubAuth}
+                disabled={loading !== null}
+                className="w-full"
+              >
+                {loading === 'github' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <span>Connecting...</span>
+                  </>
+                ) : (
                     <>
                       <span>Connect GitHub</span>
                       <span>→</span>
