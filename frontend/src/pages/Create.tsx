@@ -1,0 +1,13 @@
+export default function Create() {
+  return (
+    <div className="container mx-auto px-4 py-16">
+      <h1 className="text-4xl font-bold text-center mb-8">
+        Create Time Capsule
+      </h1>
+      <p className="text-xl text-center text-gray-600">
+        Frontend implementation coming in Phase 10
+      </p>
+    </div>
+  );
+}
+
