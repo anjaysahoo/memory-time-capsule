@@ -31,7 +31,8 @@ export interface UserSession {
     html_url: string;
     clone_url: string;
   };
-  gmailConnected?: boolean;
+  githubConnected: boolean;
+  gmailConnected: boolean;
   gmailEmail?: string;
   createdAt: string;
 }
@@ -71,7 +72,7 @@ auth.get('/github/callback', async (c) => {
   const state = c.req.query('state');
   
   if (!code) {
-    return c.redirect(`${c.env.FRONTEND_URL}/?error=missing_code`);
+    return c.redirect(`${c.env.FRONTEND_URL}/auth/callback?error=missing_code`);
   }
   
   try {
@@ -122,17 +123,19 @@ auth.get('/github/callback', async (c) => {
         html_url: repo.html_url,
         clone_url: repo.clone_url,
       },
+      githubConnected: true,
+      gmailConnected: false,
       createdAt: new Date().toISOString(),
     };
     
     await storeJson(c.env.KV, `user_session:${userId}`, session);
     
-    // Redirect to frontend with success
-    return c.redirect(`${c.env.FRONTEND_URL}/?userId=${userId}&success=true`);
+    // Redirect to frontend auth callback with success
+    return c.redirect(`${c.env.FRONTEND_URL}/auth/callback?userId=${userId}&success=true`);
     
   } catch (error: any) {
     console.error('GitHub OAuth callback error:', error);
-    return c.redirect(`${c.env.FRONTEND_URL}/?error=oauth_failed&message=${encodeURIComponent(error.message)}`);
+    return c.redirect(`${c.env.FRONTEND_URL}/auth/callback?error=oauth_failed&message=${encodeURIComponent(error.message)}`);
   }
 });
 
@@ -193,7 +196,7 @@ auth.get('/gmail/authorize', (c) => {
   authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/gmail.send');
   authUrl.searchParams.set('access_type', 'offline');
   authUrl.searchParams.set('prompt', 'consent');
-  authUrl.searchParams.set('state', userId);
+  authUrl.searchParams.set('state', userId); // Pass userId as state for callback
 
   return c.json({
     authUrl: authUrl.toString(),
@@ -213,6 +216,10 @@ auth.get('/gmail/callback', async (c) => {
       return c.json({ error: 'Missing authorization code' }, 400);
     }
 
+    if (!userId) {
+      throw new Error('Missing userId in OAuth callback. Please try connecting GitHub first.');
+    }
+
     // Exchange code for tokens
     const redirectUri = `${c.env.WORKER_URL}/api/auth/gmail/callback`;
     const tokens = await exchangeCodeForGmailTokens(
@@ -223,7 +230,7 @@ auth.get('/gmail/callback', async (c) => {
     );
 
     // Get existing user session
-    const session = await getJson<UserSession>(c.env.KV, KV_KEYS.userSession(userId || ''));
+    const session = await getJson<UserSession>(c.env.KV, KV_KEYS.userSession(userId));
     
     if (!session) {
       throw new Error('User session not found. Please connect GitHub first.');
@@ -265,6 +272,10 @@ auth.get('/gmail/callback', async (c) => {
     session.gmailConnected = true;
     session.gmailEmail = session.githubUser.email || undefined;
     await storeJson(c.env.KV, KV_KEYS.userSession(session.userId), session);
+
+    // Log for debugging
+    console.log('Gmail OAuth completed successfully for userId:', session.userId);
+    console.log('Session updated with gmailConnected:', session.gmailConnected);
 
     // Redirect to frontend with success
     const frontendUrl = new URL(c.env.FRONTEND_URL);

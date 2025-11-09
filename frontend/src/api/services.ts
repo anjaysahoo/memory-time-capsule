@@ -1,10 +1,13 @@
 import { apiClient } from './client';
 import type {
+  BackendUserSession,
   UserSession,
   CapsuleViewResponse,
   PinVerificationResponse,
   DashboardData,
+  adaptUserSession,
 } from './types';
+import { adaptUserSession as adapt } from './types';
 
 export const authService = {
   getGitHubAuthUrl: async () => {
@@ -12,14 +15,17 @@ export const authService = {
     return data.authUrl as string;
   },
 
-  getGmailAuthUrl: async () => {
-    const { data } = await apiClient.get('/api/auth/gmail/authorize');
+  getGmailAuthUrl: async (userId: string) => {
+    const { data } = await apiClient.get('/api/auth/gmail/authorize', {
+      params: { userId },
+    });
     return data.authUrl as string;
   },
 
-  getSession: async (userId: string) => {
+  getSession: async (userId: string): Promise<UserSession> => {
     const { data } = await apiClient.get(`/api/auth/session/${userId}`);
-    return data as UserSession;
+    // Adapt backend session structure to frontend structure
+    return adapt(data as BackendUserSession);
   },
 };
 
@@ -50,4 +56,3 @@ export const capsuleService = {
     return data as DashboardData;
   },
 };
-
