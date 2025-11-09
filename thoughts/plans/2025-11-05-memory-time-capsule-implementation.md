@@ -4900,6 +4900,538 @@ Separator.displayName = SeparatorPrimitive.Root.displayName
 export { Separator }
 ```
 
+#### 9. Additional Components for Phase 8 Migration
+
+**File**: `frontend/src/components/ui/avatar.tsx`
+
+```typescript
+import * as React from "react"
+import * as AvatarPrimitive from "@radix-ui/react-avatar"
+
+import { cn } from "@/lib/utils"
+
+const Avatar = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Root
+    ref={ref}
+    className={cn(
+      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+      className
+    )}
+    {...props}
+  />
+))
+Avatar.displayName = AvatarPrimitive.Root.displayName
+
+const AvatarImage = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Image>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Image
+    ref={ref}
+    className={cn("aspect-square h-full w-full", className)}
+    {...props}
+  />
+))
+AvatarImage.displayName = AvatarPrimitive.Image.displayName
+
+const AvatarFallback = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Fallback>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Fallback
+    ref={ref}
+    className={cn(
+      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      className
+    )}
+    {...props}
+  />
+))
+AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
+
+export { Avatar, AvatarImage, AvatarFallback }
+```
+
+**Install Avatar dependencies:**
+
+```bash
+npm install @radix-ui/react-avatar
+```
+
+#### 10. Additional Components for Phases 9-12
+
+The following components will be used in subsequent phases for forms, badges, and enhanced UI elements.
+
+**File**: `frontend/src/components/ui/input.tsx`
+
+```typescript
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, ...props }, ref) => {
+    return (
+      <input
+        type={type}
+        className={cn(
+          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Input.displayName = "Input"
+
+export { Input }
+```
+
+**File**: `frontend/src/components/ui/textarea.tsx`
+
+```typescript
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+export interface TextareaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <textarea
+        className={cn(
+          "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Textarea.displayName = "Textarea"
+
+export { Textarea }
+```
+
+**File**: `frontend/src/components/ui/badge.tsx`
+
+```typescript
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+        success:
+          "border-transparent bg-green-100 text-green-700 hover:bg-green-100/80",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
+
+function Badge({ className, variant, ...props }: BadgeProps) {
+  return (
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+  )
+}
+
+export { Badge, badgeVariants }
+```
+
+**Note**: Input, Textarea, and Label components don't require additional Radix UI dependencies - they're simple wrappers around native HTML elements. The Badge component is also a simple styled component without Radix dependencies.
+
+These components will be used in:
+- **Phase 9**: Badge for capsule status indicators
+- **Phase 10**: Input, Label, Textarea for capsule creation forms
+- **Phase 11**: Input for PIN entry
+
+### Migration Guide: Updating Phase 8 Components
+
+This section provides step-by-step instructions for migrating Phase 8's existing components to use Shadcn UI instead of custom CSS classes.
+
+#### Overview of Migration
+
+Phase 8 implemented several components using custom Tailwind classes defined in `frontend/src/index.css`:
+- `.btn`, `.btn-primary`, `.btn-secondary` - Button styles
+- `.card` - Card container styles
+- Manual avatar styling with `className="w-8 h-8 rounded-full"`
+- Custom loading spinner with animated borders
+
+These will be replaced with Shadcn components for better consistency, accessibility, and maintainability.
+
+#### Migration Priority
+
+1. **HIGH**: Header buttons and avatar (user-facing, visible on all pages)
+2. **MEDIUM**: LoadingSpinner component (used across the app)
+3. **LOW**: Remove deprecated CSS classes from `index.css`
+
+#### Step 1: Migrate Header Component
+
+**File**: `frontend/src/components/Header.tsx`
+
+**Current Implementation** (Phase 8):
+
+```typescript
+import { Link } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
+
+export default function Header() {
+  const { session, clearSession } = useAuthStore();
+
+  return (
+    <header className="bg-white border-b border-gray-200">
+      <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <Link to="/" className="text-2xl font-bold text-primary-600">
+          ⏰ Time Capsule
+        </Link>
+
+        <div className="flex items-center gap-4">
+          {session ? (
+            <>
+              <Link to="/dashboard" className="text-gray-700 hover:text-gray-900">
+                Dashboard
+              </Link>
+              <Link to="/create" className="text-gray-700 hover:text-gray-900">
+                Create
+              </Link>
+              <Link to="/open" className="text-gray-700 hover:text-gray-900">
+                Open
+              </Link>
+
+              <div className="flex items-center gap-3">
+                <img
+                  src={session.githubAvatar}
+                  alt={session.githubName || 'User'}
+                  className="w-8 h-8 rounded-full"
+                />
+                <button
+                  onClick={() => clearSession()}
+                  className="btn btn-secondary"
+                >
+                  Logout
+                </button>
+              </div>
+            </>
+          ) : (
+            <Link to="/auth" className="btn btn-primary">
+              Get Started
+            </Link>
+          )}
+        </div>
+      </nav>
+    </header>
+  );
+}
+```
+
+**Updated Implementation** (with Shadcn):
+
+```typescript
+import { Link } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+
+export default function Header() {
+  const { session, clearSession } = useAuthStore();
+
+  return (
+    <header className="bg-white border-b border-gray-200">
+      <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <Link to="/" className="text-2xl font-bold text-primary-600">
+          ⏰ Time Capsule
+        </Link>
+
+        <div className="flex items-center gap-4">
+          {session ? (
+            <>
+              <Link to="/dashboard" className="text-gray-700 hover:text-gray-900">
+                Dashboard
+              </Link>
+              <Link to="/create" className="text-gray-700 hover:text-gray-900">
+                Create
+              </Link>
+              <Link to="/open" className="text-gray-700 hover:text-gray-900">
+                Open
+              </Link>
+
+              <div className="flex items-center gap-3">
+                <Avatar>
+                  <AvatarImage
+                    src={session.githubAvatar}
+                    alt={session.githubName || 'User'}
+                  />
+                  <AvatarFallback>
+                    {session.githubName?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <Button
+                  variant="secondary"
+                  onClick={() => clearSession()}
+                >
+                  Logout
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Button asChild>
+              <Link to="/auth">Get Started</Link>
+            </Button>
+          )}
+        </div>
+      </nav>
+    </header>
+  );
+}
+```
+
+**Key Changes:**
+- ✅ Replaced `className="btn btn-primary"` with `<Button>` component
+- ✅ Replaced `className="btn btn-secondary"` with `<Button variant="secondary">`
+- ✅ Replaced `<img className="w-8 h-8 rounded-full">` with Shadcn `<Avatar>` components
+- ✅ Added `<AvatarFallback>` for better UX when image fails to load
+- ✅ Used `asChild` prop to render Button as Link (maintains Link behavior with Button styling)
+
+#### Step 2: Migrate LoadingSpinner Component
+
+**File**: `frontend/src/components/LoadingSpinner.tsx`
+
+**Current Implementation** (Phase 8):
+
+```typescript
+type LoadingSpinnerProps = {
+  size?: 'small' | 'medium' | 'large';
+  className?: string;
+};
+
+export default function LoadingSpinner({
+  size = 'medium',
+  className = ''
+}: LoadingSpinnerProps) {
+  const sizeClasses = {
+    small: 'w-4 h-4',
+    medium: 'w-8 h-8',
+    large: 'w-12 h-12',
+  };
+
+  return (
+    <div className={`flex justify-center items-center ${className}`}>
+      <div
+        className={`${sizeClasses[size]} border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin`}
+        role="status"
+        aria-label="Loading"
+      />
+    </div>
+  );
+}
+```
+
+**Updated Implementation** (with Shadcn):
+
+```typescript
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+type LoadingSpinnerProps = {
+  size?: 'small' | 'medium' | 'large';
+  className?: string;
+};
+
+export default function LoadingSpinner({
+  size = 'medium',
+  className = ''
+}: LoadingSpinnerProps) {
+  const sizeClasses = {
+    small: 'w-4 h-4',
+    medium: 'w-8 h-8',
+    large: 'w-12 h-12',
+  };
+
+  return (
+    <div className={cn('flex justify-center items-center', className)}>
+      <Loader2
+        className={cn(sizeClasses[size], 'animate-spin text-primary')}
+        role="status"
+        aria-label="Loading"
+      />
+    </div>
+  );
+}
+```
+
+**Key Changes:**
+- ✅ Replaced custom animated `<div>` with `Loader2` icon from lucide-react
+- ✅ Used `cn()` utility for cleaner className merging
+- ✅ Icon-based spinner provides better visual consistency
+- ✅ Maintained size prop API for backward compatibility
+
+**Alternative**: If you prefer skeleton loading states for content areas:
+
+```typescript
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Use for loading states of content blocks
+<Skeleton className="h-12 w-full" />
+<Skeleton className="h-4 w-3/4" />
+```
+
+#### Step 3: Update Placeholder Pages (Optional Enhancement)
+
+**Files**: `frontend/src/pages/Home.tsx`, `Dashboard.tsx`, `Create.tsx`, `Open.tsx`
+
+While Phase 8 pages were placeholders, you can optionally improve typography using Shadcn patterns:
+
+**Before:**
+```typescript
+<h1 className="text-4xl font-bold text-center mb-8">
+  Send Messages to the Future
+</h1>
+<p className="text-xl text-center text-gray-600">
+  Frontend implementation coming in Phase 9-11
+</p>
+```
+
+**After** (using Shadcn text utilities):
+```typescript
+<h1 className="text-4xl font-bold text-center mb-8 text-foreground">
+  Send Messages to the Future
+</h1>
+<p className="text-xl text-center text-muted-foreground">
+  Frontend implementation coming in Phase 9-11
+</p>
+```
+
+**Key Changes:**
+- ✅ Use `text-foreground` instead of implicit black
+- ✅ Use `text-muted-foreground` instead of `text-gray-600` for semantic consistency
+
+#### Step 4: Clean Up Custom CSS Classes
+
+**File**: `frontend/src/index.css`
+
+**Remove the following** from `@layer components`:
+
+```css
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 active:bg-gray-400;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+  }
+}
+```
+
+**Why**: These custom classes are no longer needed since we're using Shadcn components. Removing them prevents confusion and reduces CSS bundle size.
+
+**Keep**: The Shadcn CSS variables and base layer styles added in step 6 of this phase.
+
+#### Step 5: Update App.tsx Footer (Optional)
+
+**File**: `frontend/src/App.tsx`
+
+**Current Implementation**:
+```typescript
+<footer className="bg-white border-t border-gray-200 py-6">
+  <div className="container mx-auto px-4 text-center text-gray-600 text-sm">
+    <p>© 2025 Memory Time Capsule. Send messages to the future.</p>
+  </div>
+</footer>
+```
+
+**Updated Implementation** (with Shadcn Separator):
+```typescript
+import { Separator } from '@/components/ui/separator';
+
+// In the footer section:
+<footer className="bg-white py-6">
+  <Separator className="mb-6" />
+  <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
+    <p>© 2025 Memory Time Capsule. Send messages to the future.</p>
+  </div>
+</footer>
+```
+
+**Key Changes:**
+- ✅ Use `<Separator>` component instead of `border-t` class
+- ✅ Use `text-muted-foreground` for semantic color
+
+#### Migration Checklist
+
+After completing all migration steps, verify:
+
+- [ ] **Header.tsx** updated with `<Button>` and `<Avatar>` components
+- [ ] **LoadingSpinner.tsx** updated with `Loader2` icon
+- [ ] Custom `.btn*` and `.card` classes removed from `index.css`
+- [ ] All imports added (`Button`, `Avatar`, `Separator`, `Loader2`)
+- [ ] No TypeScript errors: `npm run build`
+- [ ] App runs without console errors: `npm run dev`
+- [ ] Visual regression check: Compare app appearance before/after migration
+
+#### Component Mapping Reference
+
+| Phase 8 Pattern | Shadcn Replacement | Import Path |
+|----------------|-------------------|-------------|
+| `className="btn btn-primary"` | `<Button>` | `@/components/ui/button` |
+| `className="btn btn-secondary"` | `<Button variant="secondary">` | `@/components/ui/button` |
+| `<img className="w-8 h-8 rounded-full">` | `<Avatar><AvatarImage /></Avatar>` | `@/components/ui/avatar` |
+| Custom animated spinner div | `<Loader2 className="animate-spin" />` | `lucide-react` |
+| `className="card"` | `<Card><CardContent /></Card>` | `@/components/ui/card` |
+| `border-t border-gray-200` | `<Separator />` | `@/components/ui/separator` |
+| `text-gray-600` | `text-muted-foreground` | (Tailwind class) |
+
+#### Troubleshooting
+
+**Issue**: TypeScript errors about missing `@/components/ui/*` imports
+- **Solution**: Verify `tsconfig.json` and `vite.config.ts` have `@` path alias configured (completed in Phase 8)
+
+**Issue**: Avatar component not found
+- **Solution**: Run `npm install @radix-ui/react-avatar` and create `avatar.tsx` component file
+
+**Issue**: Styling doesn't match previous design
+- **Solution**: Verify CSS variables in `index.css` are set correctly, especially `--primary` value
+
+**Issue**: Buttons look different after migration
+- **Solution**: Check that `tailwindcss-animate` is installed and Tailwind config includes the plugin
+
 ### Success Criteria
 
 #### Automated Verification:
@@ -5053,64 +5585,76 @@ export default function Auth() {
                     <span>Connecting...</span>
                   </>
                 ) : (
-                    <>
-                      <span>Connect GitHub</span>
-                      <span>→</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
+                  <>
+                    <span>Connect GitHub</span>
+                    <span>→</span>
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
 
           {/* Gmail Connection Card */}
-          <div className="card">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">📧</span>
+          <Card>
+            <CardHeader>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">📧</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <CardTitle>Gmail</CardTitle>
+                  <CardDescription className="mt-2">
+                    We'll send emails on your behalf when capsules are created and unlocked.
+                  </CardDescription>
                 </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold mb-2">Gmail</h3>
-                <p className="text-gray-600 mb-4">
-                  We'll send emails on your behalf when capsules are created and unlocked.
-                </p>
-                <ul className="text-sm text-gray-600 space-y-1 mb-4">
-                  <li>✓ Emails sent from your Gmail account</li>
-                  <li>✓ Recipients see your email as sender</li>
-                  <li>✓ You can view sent emails in your Gmail</li>
-                </ul>
-                <button
-                  onClick={handleGmailAuth}
-                  disabled={loading !== null}
-                  className="btn btn-primary flex items-center gap-2"
-                >
-                  {loading === 'gmail' ? (
-                    <>
-                      <LoadingSpinner size="sm" />
-                      <span>Connecting...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Connect Gmail</span>
-                      <span>→</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm text-muted-foreground space-y-2 mb-4">
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>Emails sent from your Gmail account</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>Recipients see your email as sender</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>You can view sent emails in your Gmail</span>
+                </li>
+              </ul>
+              <Button
+                onClick={handleGmailAuth}
+                disabled={loading !== null}
+                className="w-full"
+              >
+                {loading === 'gmail' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <span>Connecting...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Connect Gmail</span>
+                    <span>→</span>
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="mt-8 text-center text-sm text-gray-500">
+        <div className="mt-8 text-center text-sm text-muted-foreground">
           <p>
             By connecting your accounts, you agree to our{' '}
-            <a href="#" className="text-primary-600 hover:underline">
+            <a href="#" className="text-primary hover:underline">
               Terms of Service
             </a>{' '}
             and{' '}
-            <a href="#" className="text-primary-600 hover:underline">
+            <a href="#" className="text-primary hover:underline">
               Privacy Policy
             </a>
             .
@@ -5129,9 +5673,11 @@ export default function Auth() {
 ```typescript
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { authService } from '@/api/services';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function AuthCallback() {
   const [searchParams] = useSearchParams();
@@ -5199,29 +5745,37 @@ export default function AuthCallback() {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-md mx-auto text-center">
-        <div className="card">
-          {status === 'loading' && (
-            <>
-              <LoadingSpinner size="lg" />
-              <p className="mt-4 text-gray-600">{message}</p>
-            </>
-          )}
+        <Card>
+          <CardContent className="pt-6">
+            {status === 'loading' && (
+              <>
+                <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+                <p className="mt-4 text-muted-foreground">{message}</p>
+              </>
+            )}
 
-          {status === 'success' && (
-            <>
-              <div className="text-6xl mb-4">✅</div>
-              <p className="text-xl font-semibold text-green-600">{message}</p>
-            </>
-          )}
+            {status === 'success' && (
+              <>
+                <div className="text-6xl mb-4">✅</div>
+                <Alert className="border-green-200 bg-green-50">
+                  <AlertDescription className="text-green-700 font-semibold">
+                    {message}
+                  </AlertDescription>
+                </Alert>
+              </>
+            )}
 
-          {status === 'error' && (
-            <>
-              <div className="text-6xl mb-4">❌</div>
-              <p className="text-xl font-semibold text-red-600">{message}</p>
-              <p className="mt-2 text-sm text-gray-600">Redirecting...</p>
-            </>
-          )}
-        </div>
+            {status === 'error' && (
+              <>
+                <div className="text-6xl mb-4">❌</div>
+                <Alert variant="destructive">
+                  <AlertDescription className="font-semibold">{message}</AlertDescription>
+                </Alert>
+                <p className="mt-2 text-sm text-muted-foreground">Redirecting...</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -5235,10 +5789,13 @@ export default function AuthCallback() {
 ```typescript
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { capsuleService } from '@/api/services';
 import type { DashboardData } from '@/api/types';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import StorageMeter from '@/components/StorageMeter';
 import CapsuleCard from '@/components/CapsuleCard';
 
@@ -5277,7 +5834,7 @@ export default function Dashboard() {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="flex justify-center items-center min-h-[400px]">
-          <LoadingSpinner size="lg" />
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
       </div>
     );
@@ -5286,17 +5843,18 @@ export default function Dashboard() {
   if (error || !dashboard) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="card max-w-md mx-auto text-center">
-          <div className="text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-semibold mb-2">Failed to Load Dashboard</h2>
-          <p className="text-gray-600">{error || 'Unknown error'}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="btn btn-primary mt-4"
-          >
-            Retry
-          </button>
-        </div>
+        <Card className="max-w-md mx-auto">
+          <CardContent className="text-center pt-6">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold mb-2">Failed to Load Dashboard</h2>
+            <Alert variant="destructive" className="my-4">
+              <AlertDescription>{error || 'Unknown error'}</AlertDescription>
+            </Alert>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -5307,17 +5865,14 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Your Time Capsules</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-muted-foreground mt-1">
             {dashboard.capsules.total} capsule{dashboard.capsules.total !== 1 ? 's' : ''}{' '}
             total
           </p>
         </div>
-        <button
-          onClick={() => navigate('/create')}
-          className="btn btn-primary"
-        >
+        <Button onClick={() => navigate('/create')}>
           + Create Capsule
-        </button>
+        </Button>
       </div>
 
       {/* Storage Meter */}
@@ -5329,46 +5884,51 @@ export default function Dashboard() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="card text-center">
-          <div className="text-4xl mb-2">⏳</div>
-          <div className="text-3xl font-bold text-primary-600">
-            {dashboard.capsules.pending}
-          </div>
-          <div className="text-sm text-gray-600">Pending</div>
-        </div>
+        <Card>
+          <CardContent className="text-center pt-6">
+            <div className="text-4xl mb-2">⏳</div>
+            <div className="text-3xl font-bold text-primary">
+              {dashboard.capsules.pending}
+            </div>
+            <div className="text-sm text-muted-foreground">Pending</div>
+          </CardContent>
+        </Card>
 
-        <div className="card text-center">
-          <div className="text-4xl mb-2">🎉</div>
-          <div className="text-3xl font-bold text-green-600">
-            {dashboard.capsules.unlocked}
-          </div>
-          <div className="text-sm text-gray-600">Unlocked</div>
-        </div>
+        <Card>
+          <CardContent className="text-center pt-6">
+            <div className="text-4xl mb-2">🎉</div>
+            <div className="text-3xl font-bold text-green-600">
+              {dashboard.capsules.unlocked}
+            </div>
+            <div className="text-sm text-muted-foreground">Unlocked</div>
+          </CardContent>
+        </Card>
 
-        <div className="card text-center">
-          <div className="text-4xl mb-2">⚠️</div>
-          <div className="text-3xl font-bold text-red-600">
-            {dashboard.capsules.failed}
-          </div>
-          <div className="text-sm text-gray-600">Failed</div>
-        </div>
+        <Card>
+          <CardContent className="text-center pt-6">
+            <div className="text-4xl mb-2">⚠️</div>
+            <div className="text-3xl font-bold text-red-600">
+              {dashboard.capsules.failed}
+            </div>
+            <div className="text-sm text-muted-foreground">Failed</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Capsules List */}
       {dashboard.capsuleList.length === 0 ? (
-        <div className="card text-center py-12">
-          <div className="text-6xl mb-4">📦</div>
-          <h3 className="text-xl font-semibold mb-2">No capsules yet</h3>
-          <p className="text-gray-600 mb-6">
-            Create your first time capsule to get started!
-          </p>
-          <button
-            onClick={() => navigate('/create')}
-            className="btn btn-primary"
-          >
-            Create Your First Capsule
-          </button>
-        </div>
+        <Card>
+          <CardContent className="text-center py-12">
+            <div className="text-6xl mb-4">📦</div>
+            <h3 className="text-xl font-semibold mb-2">No capsules yet</h3>
+            <p className="text-muted-foreground mb-6">
+              Create your first time capsule to get started!
+            </p>
+            <Button onClick={() => navigate('/create')}>
+              Create Your First Capsule
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold mb-4">All Capsules</h2>
@@ -5402,6 +5962,10 @@ export default function Dashboard() {
 **File**: `frontend/src/components/StorageMeter.tsx`
 
 ```typescript
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+
 interface StorageMeterProps {
   used: number;
   limit: number;
@@ -5417,30 +5981,30 @@ export default function StorageMeter({ used, limit, percentage }: StorageMeterPr
     return `${(mb / 1024).toFixed(2)} GB`;
   };
 
-  const getColor = () => {
-    if (percentage >= 90) return 'bg-red-600';
-    if (percentage >= 70) return 'bg-yellow-600';
-    return 'bg-primary-600';
+  const getProgressColor = () => {
+    if (percentage >= 90) return '[&>div]:bg-red-600';
+    if (percentage >= 70) return '[&>div]:bg-yellow-600';
+    return ''; // Uses default primary color
   };
 
   return (
-    <div className="card mb-8">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-semibold">Storage Usage</h3>
-        <span className="text-sm text-gray-600">
-          {formatBytes(used)} / {formatBytes(limit)}
-        </span>
-      </div>
+    <Card className="mb-8">
+      <CardContent className="pt-6">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-semibold">Storage Usage</h3>
+          <span className="text-sm text-muted-foreground">
+            {formatBytes(used)} / {formatBytes(limit)}
+          </span>
+        </div>
 
-      <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-        <div
-          className={`h-full transition-all duration-500 ${getColor()}`}
-          style={{ width: `${Math.min(percentage, 100)}%` }}
+        <Progress
+          value={percentage}
+          className={cn("w-full h-4", getProgressColor())}
         />
-      </div>
 
-      <p className="text-sm text-gray-600 mt-2">{percentage}% used</p>
-    </div>
+        <p className="text-sm text-muted-foreground mt-2">{percentage}% used</p>
+      </CardContent>
+    </Card>
   );
 }
 ```
@@ -5449,6 +6013,8 @@ export default function StorageMeter({ used, limit, percentage }: StorageMeterPr
 
 ```typescript
 import { format } from 'date-fns';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import type { Capsule } from '@/api/types';
 
 interface CapsuleCardProps {
@@ -5472,63 +6038,52 @@ export default function CapsuleCard({ capsule }: CapsuleCardProps) {
 
   const getStatusBadge = () => {
     if (isUnlocked && capsule.unlockEmailSent) {
-      return (
-        <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full">
-          Unlocked
-        </span>
-      );
+      return <Badge variant="success">Unlocked</Badge>;
     }
     if (isUnlocked && !capsule.unlockEmailSent) {
-      return (
-        <span className="px-3 py-1 bg-red-100 text-red-700 text-sm font-medium rounded-full">
-          Failed
-        </span>
-      );
+      return <Badge variant="destructive">Failed</Badge>;
     }
-    return (
-      <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
-        Pending
-      </span>
-    );
+    return <Badge variant="secondary">Pending</Badge>;
   };
 
   return (
-    <div className="card hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 text-4xl">
-          {getContentIcon()}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-semibold truncate">{capsule.title}</h3>
-              <p className="text-sm text-gray-600">
-                To: {capsule.recipientName || capsule.recipientEmail}
-              </p>
-            </div>
-            {getStatusBadge()}
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="pt-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 text-4xl">
+            {getContentIcon()}
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-600">
-            <div>
-              <span className="font-medium">Unlocks:</span>{' '}
-              {format(unlockDate, 'MMM d, yyyy h:mm a')}
-            </div>
-            <div>
-              <span className="font-medium">Type:</span> {capsule.contentType}
-            </div>
-            {capsule.fileSize && (
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <span className="font-medium">Size:</span>{' '}
-                {(capsule.fileSize / 1024 / 1024).toFixed(1)} MB
+                <h3 className="text-lg font-semibold truncate">{capsule.title}</h3>
+                <p className="text-sm text-muted-foreground">
+                  To: {capsule.recipientName || capsule.recipientEmail}
+                </p>
               </div>
-            )}
-          </div>
+              {getStatusBadge()}
+            </div>
 
-          {capsule.viewedAt && (
-            <p className="mt-2 text-xs text-gray-500">
-              Viewed {format(new Date(capsule.viewedAt * 1000), 'MMM d, yyyy h:mm a')}
+            <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
+              <div>
+                <span className="font-medium">Unlocks:</span>{' '}
+                {format(unlockDate, 'MMM d, yyyy h:mm a')}
+              </div>
+              <div>
+                <span className="font-medium">Type:</span> {capsule.contentType}
+              </div>
+              {capsule.fileSize && (
+                <div>
+                  <span className="font-medium">Size:</span>{' '}
+                  {(capsule.fileSize / 1024 / 1024).toFixed(1)} MB
+                </div>
+              )}
+            </div>
+
+            {capsule.viewedAt && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Viewed {format(new Date(capsule.viewedAt * 1000), 'MMM d, yyyy h:mm a')}
             </p>
           )}
         </div>
