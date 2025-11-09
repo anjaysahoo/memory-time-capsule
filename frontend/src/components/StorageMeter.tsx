@@ -42,7 +42,12 @@ export default function StorageMeter({
           className={cn("w-full h-4", getProgressColor())}
         />
 
-        <p className="text-sm text-muted-foreground mt-2">{percentage}% used</p>
+        <div className="mt-2 space-y-1">
+          <p className="text-sm text-muted-foreground">{percentage}% used</p>
+          <p className="text-xs text-muted-foreground/70">
+            💡 Storage updates within 5-10 minutes after upload
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
