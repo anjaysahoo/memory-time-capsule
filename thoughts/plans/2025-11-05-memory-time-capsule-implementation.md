@@ -6158,11 +6158,17 @@ Build the capsule creation form with file upload, date/time picker, recipient in
 ```typescript
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { capsuleService } from '@/api/services';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import FileUpload from '@/components/FileUpload';
 import DateTimePicker from '@/components/DateTimePicker';
-import LoadingSpinner from '@/components/LoadingSpinner';
 
 type ContentType = 'video' | 'audio' | 'photo' | 'text';
 
@@ -6285,47 +6291,49 @@ export default function Create() {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto">
-          <div className="card text-center">
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold mb-4">Time Capsule Created!</h2>
-            <p className="text-gray-600 mb-8">
-              Your capsule has been sealed and the recipient has been notified via email.
-            </p>
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-3xl font-bold mb-4">Time Capsule Created!</h2>
+              <p className="text-muted-foreground mb-8">
+                Your capsule has been sealed and the recipient has been notified via email.
+              </p>
 
-            <div className="bg-gray-50 p-6 rounded-lg mb-6">
-              <p className="text-sm text-gray-600 mb-2">Magic Link (for recipient):</p>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={success.magicLink}
-                  readOnly
-                  className="flex-1 px-4 py-2 border rounded-lg text-sm"
-                />
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(success.magicLink);
-                    alert('Link copied!');
-                  }}
-                  className="btn btn-secondary"
-                >
-                  Copy
-                </button>
+              <div className="bg-muted p-6 rounded-lg mb-6">
+                <p className="text-sm text-muted-foreground mb-2">Magic Link (for recipient):</p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="text"
+                    value={success.magicLink}
+                    readOnly
+                    className="flex-1 text-sm"
+                  />
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      navigator.clipboard.writeText(success.magicLink);
+                      alert('Link copied!');
+                    }}
+                  >
+                    Copy
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => window.open(success.whatsappLink, '_blank')}
-                className="btn btn-primary flex items-center justify-center gap-2"
-              >
-                <span>📱</span>
-                <span>Share via WhatsApp</span>
-              </button>
-              <button onClick={() => navigate('/dashboard')} className="btn btn-secondary">
-                View Dashboard
-              </button>
-            </div>
-          </div>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  onClick={() => window.open(success.whatsappLink, '_blank')}
+                  className="flex items-center justify-center gap-2"
+                >
+                  <span>📱</span>
+                  <span>Share via WhatsApp</span>
+                </Button>
+                <Button variant="secondary" onClick={() => navigate('/dashboard')}>
+                  View Dashboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -6337,151 +6345,161 @@ export default function Create() {
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Create Time Capsule</h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Send a message, video, or photo to unlock in the future
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
-          <div className="card">
-            <label className="block text-sm font-medium mb-2">Capsule Title *</label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="Happy Birthday! 🎂"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              maxLength={100}
-            />
-          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <Label htmlFor="title">Capsule Title *</Label>
+              <Input
+                id="title"
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Happy Birthday! 🎂"
+                maxLength={100}
+                className="mt-2"
+              />
+            </CardContent>
+          </Card>
 
           {/* Unlock Date */}
-          <div className="card">
-            <label className="block text-sm font-medium mb-2">Unlock Date & Time *</label>
-            <DateTimePicker
-              value={formData.unlockDate}
-              onChange={(date) => setFormData({ ...formData, unlockDate: date })}
-              minDate={new Date()}
-            />
-          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <Label>Unlock Date & Time *</Label>
+              <div className="mt-2">
+                <DateTimePicker
+                  value={formData.unlockDate}
+                  onChange={(date) => setFormData({ ...formData, unlockDate: date })}
+                  minDate={new Date()}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Recipient */}
-          <div className="card">
-            <h3 className="text-lg font-semibold mb-4">Recipient</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Email Address *</label>
-                <input
-                  type="email"
-                  value={formData.recipientEmail}
-                  onChange={(e) =>
-                    setFormData({ ...formData, recipientEmail: e.target.value })
-                  }
-                  placeholder="friend@example.com"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4">Recipient</h3>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="recipientEmail">Email Address *</Label>
+                  <Input
+                    id="recipientEmail"
+                    type="email"
+                    value={formData.recipientEmail}
+                    onChange={(e) =>
+                      setFormData({ ...formData, recipientEmail: e.target.value })
+                    }
+                    placeholder="friend@example.com"
+                    className="mt-2"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="recipientName">Name (optional)</Label>
+                  <Input
+                    id="recipientName"
+                    type="text"
+                    value={formData.recipientName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, recipientName: e.target.value })
+                    }
+                    placeholder="Alex Smith"
+                    className="mt-2"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Name (optional)
-                </label>
-                <input
-                  type="text"
-                  value={formData.recipientName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, recipientName: e.target.value })
-                  }
-                  placeholder="Alex Smith"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Content Type */}
-          <div className="card">
-            <h3 className="text-lg font-semibold mb-4">Content Type *</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {(['text', 'video', 'audio', 'photo'] as ContentType[]).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => handleContentTypeChange(type)}
-                  className={`p-4 border-2 rounded-lg transition-colors ${
-                    formData.contentType === type
-                      ? 'border-primary-600 bg-primary-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">
-                    {type === 'text' && '📝'}
-                    {type === 'video' && '🎥'}
-                    {type === 'audio' && '🎵'}
-                    {type === 'photo' && '📷'}
-                  </div>
-                  <div className="font-medium capitalize">{type}</div>
-                </button>
-              ))}
-            </div>
-          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4">Content Type *</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {(['text', 'video', 'audio', 'photo'] as ContentType[]).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => handleContentTypeChange(type)}
+                    className={`p-4 border-2 rounded-lg transition-colors ${
+                      formData.contentType === type
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-muted-foreground'
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">
+                      {type === 'text' && '📝'}
+                      {type === 'video' && '🎥'}
+                      {type === 'audio' && '🎵'}
+                      {type === 'photo' && '📷'}
+                    </div>
+                    <div className="font-medium capitalize">{type}</div>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Content Input */}
-          <div className="card">
-            <h3 className="text-lg font-semibold mb-4">Your Content *</h3>
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4">Your Content *</h3>
 
-            {formData.contentType === 'text' ? (
-              <textarea
-                value={formData.textContent}
-                onChange={(e) =>
-                  setFormData({ ...formData, textContent: e.target.value })
-                }
-                placeholder="Write your message here... (max 10,000 characters)"
-                rows={10}
-                maxLength={10000}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono"
-              />
-            ) : (
-              <FileUpload
-                contentType={formData.contentType}
-                file={file}
-                onFileSelect={setFile}
-                onFileRemove={() => setFile(null)}
-              />
-            )}
-          </div>
+              {formData.contentType === 'text' ? (
+                <Textarea
+                  value={formData.textContent}
+                  onChange={(e) =>
+                    setFormData({ ...formData, textContent: e.target.value })
+                  }
+                  placeholder="Write your message here... (max 10,000 characters)"
+                  rows={10}
+                  maxLength={10000}
+                  className="font-mono"
+                />
+              ) : (
+                <FileUpload
+                  contentType={formData.contentType}
+                  file={file}
+                  onFileSelect={setFile}
+                  onFileRemove={() => setFile(null)}
+                />
+              )}
+            </CardContent>
+          </Card>
 
           {/* Error Message */}
           {error && (
-            <div className="card bg-red-50 border-red-200">
-              <p className="text-red-600">{error}</p>
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
           {/* Submit Button */}
           <div className="flex gap-4">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => navigate('/dashboard')}
-              className="btn btn-secondary flex-1"
               disabled={loading}
+              className="flex-1"
             >
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary flex-1"
-              disabled={loading}
-            >
+            </Button>
+            <Button type="submit" disabled={loading} className="flex-1">
               {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <LoadingSpinner size="sm" />
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   <span>Creating...</span>
-                </div>
+                </>
               ) : (
                 '🔒 Lock Capsule'
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -6496,6 +6514,8 @@ export default function Create() {
 
 ```typescript
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface FileUploadProps {
   contentType: 'video' | 'audio' | 'photo';
@@ -6592,7 +6612,7 @@ export default function FileUpload({
 
   if (file) {
     return (
-      <div className="border-2 border-gray-200 rounded-lg p-6">
+      <div className="border-2 border-border rounded-lg p-6">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0 text-4xl">
             {contentType === 'video' && '🎥'}
@@ -6601,15 +6621,16 @@ export default function FileUpload({
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-medium truncate">{file.name}</p>
-            <p className="text-sm text-gray-600">{formatFileSize(file.size)}</p>
+            <p className="text-sm text-muted-foreground">{formatFileSize(file.size)}</p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={onFileRemove}
-            className="text-red-600 hover:text-red-700"
+            className="text-destructive hover:text-destructive/80"
           >
             Remove
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -6620,8 +6641,8 @@ export default function FileUpload({
       <div
         className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
           dragActive
-            ? 'border-primary-500 bg-primary-50'
-            : 'border-gray-300 hover:border-gray-400'
+            ? 'border-primary bg-primary/10'
+            : 'border-border hover:border-muted-foreground'
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -6636,7 +6657,7 @@ export default function FileUpload({
         <p className="text-lg font-medium mb-2">
           Drop your {contentType} file here, or click to browse
         </p>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Max size: {Math.floor(CONTENT_LIMITS[contentType] / 1024 / 1024)}MB
         </p>
         <input
@@ -6646,15 +6667,17 @@ export default function FileUpload({
           accept={getAcceptString()}
           onChange={handleChange}
         />
-        <label htmlFor="file-upload" className="btn btn-primary cursor-pointer inline-block">
-          Choose File
-        </label>
+        <Button asChild>
+          <label htmlFor="file-upload" className="cursor-pointer">
+            Choose File
+          </label>
+        </Button>
       </div>
 
       {error && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{error}</p>
-        </div>
+        <Alert variant="destructive" className="mt-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
     </div>
   );
@@ -6667,6 +6690,8 @@ export default function FileUpload({
 
 ```typescript
 import { useState, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface DateTimePickerProps {
   value: Date | null;
@@ -6727,22 +6752,24 @@ export default function DateTimePicker({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-        <input
+        <Label htmlFor="capsule-date">Date</Label>
+        <Input
+          id="capsule-date"
           type="date"
           value={dateStr}
           onChange={(e) => handleDateChange(e.target.value)}
           min={getMinDateStr()}
-          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="mt-1"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-        <input
+        <Label htmlFor="capsule-time">Time</Label>
+        <Input
+          id="capsule-time"
           type="time"
           value={timeStr}
           onChange={(e) => handleTimeChange(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="mt-1"
         />
       </div>
     </div>
@@ -6824,9 +6851,11 @@ Build the capsule viewing page that recipients access via magic link. This page 
 ```typescript
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { capsuleService } from '@/api/services';
 import type { CapsuleViewResponse, PinVerificationResponse } from '@/api/types';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import Countdown from '@/components/Countdown';
 import PinInput from '@/components/PinInput';
 import ContentViewer from '@/components/ContentViewer';
@@ -6913,7 +6942,7 @@ export default function Open() {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="flex justify-center items-center min-h-[400px]">
-          <LoadingSpinner size="lg" />
+          <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       </div>
     );
@@ -6924,11 +6953,13 @@ export default function Open() {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
-          <div className="card text-center">
-            <div className="text-6xl mb-4">❌</div>
-            <h2 className="text-2xl font-bold mb-4">Capsule Not Found</h2>
-            <p className="text-gray-600">{error}</p>
-          </div>
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <div className="text-6xl mb-4">❌</div>
+              <h2 className="text-2xl font-bold mb-4">Capsule Not Found</h2>
+              <p className="text-muted-foreground">{error}</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -6939,17 +6970,19 @@ export default function Open() {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
-          <div className="card text-center">
-            <div className="text-6xl mb-4">⏳</div>
-            <h2 className="text-2xl font-bold mb-4">Capsule Unlocking...</h2>
-            <p className="text-gray-600 mb-4">
-              This capsule has reached its unlock time and is being processed. You should
-              receive an email with the PIN shortly.
-            </p>
-            <p className="text-sm text-gray-500">
-              This usually takes less than an hour. Check your email for the unlock PIN.
-            </p>
-          </div>
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <div className="text-6xl mb-4">⏳</div>
+              <h2 className="text-2xl font-bold mb-4">Capsule Unlocking...</h2>
+              <p className="text-muted-foreground mb-4">
+                This capsule has reached its unlock time and is being processed. You should
+                receive an email with the PIN shortly.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                This usually takes less than an hour. Check your email for the unlock PIN.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -6966,30 +6999,32 @@ export default function Open() {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto">
-          <div className="card text-center">
-            <div className="text-6xl mb-6">🎁</div>
-            <h1 className="text-3xl font-bold mb-4">{capsule.title}</h1>
-            <p className="text-xl text-gray-600 mb-8">
-              From <strong>{capsule.senderName}</strong>
-            </p>
-
-            <Countdown targetDate={new Date(capsule.unlockAt * 1000)} />
-
-            <div className="mt-8 pt-8 border-t">
-              <p className="text-sm text-gray-600">
-                This time capsule will unlock on{' '}
-                <strong>
-                  {new Date(capsule.unlockAt * 1000).toLocaleString('en-US', {
-                    dateStyle: 'full',
-                    timeStyle: 'short',
-                  })}
-                </strong>
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <div className="text-6xl mb-6">🎁</div>
+              <h1 className="text-3xl font-bold mb-4">{capsule.title}</h1>
+              <p className="text-xl text-muted-foreground mb-8">
+                From <strong>{capsule.senderName}</strong>
               </p>
-              <p className="text-sm text-gray-500 mt-2">
-                You'll receive an email with a PIN to open it when the time comes.
-              </p>
-            </div>
-          </div>
+
+              <Countdown targetDate={new Date(capsule.unlockAt * 1000)} />
+
+              <div className="mt-8 pt-8 border-t">
+                <p className="text-sm text-muted-foreground">
+                  This time capsule will unlock on{' '}
+                  <strong>
+                    {new Date(capsule.unlockAt * 1000).toLocaleString('en-US', {
+                      dateStyle: 'full',
+                      timeStyle: 'short',
+                    })}
+                  </strong>
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  You'll receive an email with a PIN to open it when the time comes.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -7000,33 +7035,35 @@ export default function Open() {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
-          <div className="card text-center">
-            <div className="text-6xl mb-6">🔓</div>
-            <h1 className="text-2xl font-bold mb-4">Time Capsule Unlocked!</h1>
-            <p className="text-gray-600 mb-8">
-              From <strong>{capsule.senderName}</strong>
-            </p>
-
-            <p className="text-lg font-medium mb-6">Enter your 4-digit PIN to view</p>
-
-            <PinInput onSubmit={handlePinSubmit} />
-
-            {pinError && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{pinError}</p>
-              </div>
-            )}
-
-            <p className="text-sm text-gray-500 mt-4">
-              {remainingAttempts} attempt{remainingAttempts !== 1 ? 's' : ''} remaining
-            </p>
-
-            <div className="mt-8 pt-8 border-t">
-              <p className="text-sm text-gray-600">
-                Check your email for the PIN. The PIN was sent when this capsule unlocked.
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <div className="text-6xl mb-6">🔓</div>
+              <h1 className="text-2xl font-bold mb-4">Time Capsule Unlocked!</h1>
+              <p className="text-muted-foreground mb-8">
+                From <strong>{capsule.senderName}</strong>
               </p>
-            </div>
-          </div>
+
+              <p className="text-lg font-medium mb-6">Enter your 4-digit PIN to view</p>
+
+              <PinInput onSubmit={handlePinSubmit} />
+
+              {pinError && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertDescription>{pinError}</AlertDescription>
+                </Alert>
+              )}
+
+              <p className="text-sm text-muted-foreground mt-4">
+                {remainingAttempts} attempt{remainingAttempts !== 1 ? 's' : ''} remaining
+              </p>
+
+              <div className="mt-8 pt-8 border-t">
+                <p className="text-sm text-muted-foreground">
+                  Check your email for the PIN. The PIN was sent when this capsule unlocked.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -7037,37 +7074,39 @@ export default function Open() {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
-          <div className="card">
-            <div className="text-center mb-8">
-              <div className="text-6xl mb-4">🎉</div>
-              <h1 className="text-3xl font-bold mb-2">{capsule.title}</h1>
-              <p className="text-gray-600">
-                From <strong>{capsule.senderName}</strong>
-              </p>
-            </div>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center mb-8">
+                <div className="text-6xl mb-4">🎉</div>
+                <h1 className="text-3xl font-bold mb-2">{capsule.title}</h1>
+                <p className="text-muted-foreground">
+                  From <strong>{capsule.senderName}</strong>
+                </p>
+              </div>
 
-            <ContentViewer
-              contentType={capsule.contentType}
-              contentUrl={unlockedData.contentUrl}
-              textContent={unlockedData.capsule.textContent}
-            />
+              <ContentViewer
+                contentType={capsule.contentType}
+                contentUrl={unlockedData.contentUrl}
+                textContent={unlockedData.capsule.textContent}
+              />
 
-            <div className="mt-8 pt-8 border-t text-center text-sm text-gray-600">
-              <p>
-                Created on{' '}
-                {new Date(capsule.createdAt * 1000).toLocaleDateString('en-US', {
-                  dateStyle: 'long',
-                })}
-              </p>
-              <p className="mt-1">
-                Unlocked on{' '}
-                {new Date(capsule.unlockAt * 1000).toLocaleDateString('en-US', {
-                  dateStyle: 'long',
-                  timeStyle: 'short',
-                })}
-              </p>
-            </div>
-          </div>
+              <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
+                <p>
+                  Created on{' '}
+                  {new Date(capsule.createdAt * 1000).toLocaleDateString('en-US', {
+                    dateStyle: 'long',
+                  })}
+                </p>
+                <p className="mt-1">
+                  Unlocked on{' '}
+                  {new Date(capsule.unlockAt * 1000).toLocaleDateString('en-US', {
+                    dateStyle: 'long',
+                    timeStyle: 'short',
+                  })}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -7129,10 +7168,10 @@ export default function Countdown({ targetDate }: CountdownProps) {
 
   const TimeUnit = ({ value, label }: { value: number; label: string }) => (
     <div className="flex flex-col items-center">
-      <div className="bg-primary-600 text-white rounded-lg p-4 min-w-[80px]">
+      <div className="bg-primary text-primary-foreground rounded-lg p-4 min-w-[80px]">
         <div className="text-4xl font-bold">{value.toString().padStart(2, '0')}</div>
       </div>
-      <div className="text-sm text-gray-600 mt-2 font-medium uppercase">{label}</div>
+      <div className="text-sm text-muted-foreground mt-2 font-medium uppercase">{label}</div>
     </div>
   );
 
@@ -7153,6 +7192,7 @@ export default function Countdown({ targetDate }: CountdownProps) {
 
 ```typescript
 import { useState, useRef, KeyboardEvent } from 'react';
+import { Input } from '@/components/ui/input';
 
 interface PinInputProps {
   onSubmit: (pin: string) => void;
@@ -7214,7 +7254,7 @@ export default function PinInput({ onSubmit }: PinInputProps) {
   return (
     <div className="flex justify-center gap-3">
       {pin.map((digit, index) => (
-        <input
+        <Input
           key={index}
           ref={inputRefs[index]}
           type="text"
@@ -7224,7 +7264,7 @@ export default function PinInput({ onSubmit }: PinInputProps) {
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={handlePaste}
-          className="w-16 h-16 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none"
+          className="w-16 h-16 text-center text-2xl font-bold"
         />
       ))}
     </div>
@@ -7372,6 +7412,8 @@ Complete the final integration tasks, add home page content, polish the UI, set 
 ```typescript
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Home() {
   const { isAuthenticated } = useAuthStore();
@@ -7379,7 +7421,7 @@ export default function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary-600 to-purple-700 text-white">
+      <div className="bg-gradient-to-br from-primary to-purple-700 text-white">
         <div className="container mx-auto px-4 py-24">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
@@ -7389,12 +7431,11 @@ export default function Home() {
               Create time capsules with videos, photos, or messages that unlock exactly when
               you want them to.
             </p>
-            <Link
-              to={isAuthenticated() ? '/create' : '/auth'}
-              className="inline-block bg-white text-primary-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors"
-            >
-              {isAuthenticated() ? 'Create Capsule' : 'Get Started Free'}
-            </Link>
+            <Button asChild size="lg">
+              <Link to={isAuthenticated() ? '/create' : '/auth'}>
+                {isAuthenticated() ? 'Create Capsule' : 'Get Started Free'}
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -7406,7 +7447,7 @@ export default function Home() {
           <div className="text-center">
             <div className="text-6xl mb-6">1️⃣</div>
             <h3 className="text-2xl font-semibold mb-4">Connect Your Accounts</h3>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Link your GitHub (for storage) and Gmail (for sending) in under 3 minutes. All
               your data stays in your own accounts.
             </p>
@@ -7415,7 +7456,7 @@ export default function Home() {
           <div className="text-center">
             <div className="text-6xl mb-6">2️⃣</div>
             <h3 className="text-2xl font-semibold mb-4">Create Your Capsule</h3>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Upload a video, audio, photo, or write a message. Set the unlock date and add
               the recipient's email.
             </p>
@@ -7424,7 +7465,7 @@ export default function Home() {
           <div className="text-center">
             <div className="text-6xl mb-6">3️⃣</div>
             <h3 className="text-2xl font-semibold mb-4">Automatic Unlock</h3>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               We'll automatically send the capsule to your recipient when the time comes,
               with a secure PIN for access.
             </p>
@@ -7433,77 +7474,102 @@ export default function Home() {
       </div>
 
       {/* Features */}
-      <div className="bg-gray-50 py-24">
+      <div className="bg-muted/50 py-24">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-16">Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="card">
-              <div className="text-4xl mb-4">🎥</div>
-              <h3 className="text-xl font-semibold mb-2">Multiple Content Types</h3>
-              <p className="text-gray-600">
-                Videos up to 100MB, audio files, photos, or simple text messages.
-              </p>
-            </div>
+            <Card>
+              <CardHeader>
+                <div className="text-4xl mb-2">🎥</div>
+                <CardTitle>Multiple Content Types</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Videos up to 100MB, audio files, photos, or simple text messages.
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="card">
-              <div className="text-4xl mb-4">🔒</div>
-              <h3 className="text-xl font-semibold mb-2">Secure & Private</h3>
-              <p className="text-gray-600">
-                All content stored in your private GitHub repository with encrypted access
-                tokens.
-              </p>
-            </div>
+            <Card>
+              <CardHeader>
+                <div className="text-4xl mb-2">🔒</div>
+                <CardTitle>Secure & Private</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  All content stored in your private GitHub repository with encrypted access
+                  tokens.
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="card">
-              <div className="text-4xl mb-4">⏰</div>
-              <h3 className="text-xl font-semibold mb-2">Precise Timing</h3>
-              <p className="text-gray-600">
-                Hourly unlock precision using GitHub Actions. Set any future date and time.
-              </p>
-            </div>
+            <Card>
+              <CardHeader>
+                <div className="text-4xl mb-2">⏰</div>
+                <CardTitle>Precise Timing</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Hourly unlock precision using GitHub Actions. Set any future date and time.
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="card">
-              <div className="text-4xl mb-4">📧</div>
-              <h3 className="text-xl font-semibold mb-2">Email Notifications</h3>
-              <p className="text-gray-600">
-                Recipients get emails when capsules are created and when they unlock, with
-                secure PIN access.
-              </p>
-            </div>
+            <Card>
+              <CardHeader>
+                <div className="text-4xl mb-2">📧</div>
+                <CardTitle>Email Notifications</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Recipients get emails when capsules are created and when they unlock, with
+                  secure PIN access.
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="card">
-              <div className="text-4xl mb-4">💰</div>
-              <h3 className="text-xl font-semibold mb-2">100% Free</h3>
-              <p className="text-gray-600">
-                Uses free tiers of GitHub, Gmail, and Cloudflare. 1GB storage per user.
-              </p>
-            </div>
+            <Card>
+              <CardHeader>
+                <div className="text-4xl mb-2">💰</div>
+                <CardTitle>100% Free</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Uses free tiers of GitHub, Gmail, and Cloudflare. 1GB storage per user.
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="card">
-              <div className="text-4xl mb-4">📱</div>
-              <h3 className="text-xl font-semibold mb-2">WhatsApp Sharing</h3>
-              <p className="text-gray-600">
-                Optional WhatsApp sharing with pre-filled messages for easy communication.
-              </p>
-            </div>
+            <Card>
+              <CardHeader>
+                <div className="text-4xl mb-2">📱</div>
+                <CardTitle>WhatsApp Sharing</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Optional WhatsApp sharing with pre-filled messages for easy communication.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
 
       {/* CTA Section */}
       <div className="container mx-auto px-4 py-24">
-        <div className="max-w-2xl mx-auto text-center card bg-primary-50 border-primary-200">
-          <h2 className="text-3xl font-bold mb-4">Ready to Send a Message to the Future?</h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Create your first time capsule in minutes. No credit card required.
-          </p>
-          <Link
-            to={isAuthenticated() ? '/create' : '/auth'}
-            className="inline-block btn btn-primary text-lg px-8 py-4"
-          >
-            {isAuthenticated() ? 'Create Your First Capsule' : 'Get Started Free'}
-          </Link>
-        </div>
+        <Card className="max-w-2xl mx-auto bg-primary/5 border-primary/20">
+          <CardContent className="pt-6 text-center">
+            <h2 className="text-3xl font-bold mb-4">Ready to Send a Message to the Future?</h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              Create your first time capsule in minutes. No credit card required.
+            </p>
+            <Button asChild size="lg">
+              <Link to={isAuthenticated() ? '/create' : '/auth'}>
+                {isAuthenticated() ? 'Create Your First Capsule' : 'Get Started Free'}
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
