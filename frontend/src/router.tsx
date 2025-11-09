@@ -6,6 +6,7 @@ import AuthCallback from './pages/AuthCallback';
 import Dashboard from './pages/Dashboard';
 import Create from './pages/Create';
 import Open from './pages/Open';
+import ComponentTest from './pages/ComponentTest';
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
       {
         path: 'open',
         element: <Open />,
+      },
+      {
+        path: 'test',
+        element: <ComponentTest />,
       },
     ],
   },
