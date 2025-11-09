@@ -36,9 +36,9 @@ export interface CapsuleMetadata {
 }
 
 export const CONTENT_LIMITS = {
-  video: 100 * 1024 * 1024, // 100MB
-  audio: 50 * 1024 * 1024,  // 50MB
-  photo: 50 * 1024 * 1024,  // 50MB combined (up to 5 images)
+  video: 30 * 1024 * 1024,  // 30MB (Cloudflare Workers free tier CPU limit)
+  audio: 30 * 1024 * 1024,  // 30MB
+  photo: 30 * 1024 * 1024,  // 30MB
   text: 10000, // 10k characters
 };
 

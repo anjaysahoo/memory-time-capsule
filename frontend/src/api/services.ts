@@ -30,10 +30,21 @@ export const authService = {
 };
 
 export const capsuleService = {
-  create: async (formData: FormData) => {
+  create: async (
+    formData: FormData,
+    onProgress?: (progress: number) => void
+  ) => {
     const { data } = await apiClient.post('/api/capsule/create', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total && onProgress) {
+          const percentage = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress(percentage);
+        }
       },
     });
     return data;

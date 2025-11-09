@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_WORKER_URL || '/api';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 300000, // 5 minutes for large file uploads
   headers: {
     'Content-Type': 'application/json',
   },
