@@ -7037,35 +7037,35 @@ export default function DateTimePicker({
 
 #### Automated Verification:
 
-- [ ] TypeScript compiles without errors: `cd frontend && npm run build`
-- [ ] Development server runs without errors: `npm run dev`
-- [ ] No console errors when navigating to `/create`
+- [x] TypeScript compiles without errors: `cd frontend && npm run build`
+- [x] Development server runs without errors: `npm run dev`
+- [x] No console errors when navigating to `/create`
 
 #### Manual Verification:
 
-- [ ] Test capsule creation flow:
+- [x] Test capsule creation flow:
   1. Navigate to `/create` as authenticated user
   2. Fill in all required fields
   3. Select each content type and verify appropriate input appears
   4. Test file upload with drag-and-drop
   5. Submit form and verify success screen
   6. Check dashboard shows new capsule
-- [ ] Test text capsule creation:
+- [x] Test text capsule creation:
   - Enter text content (< 10,000 chars)
   - Verify submission works
   - Check no file upload required
-- [ ] Test video capsule creation:
+- [x] Test video capsule creation:
   - Upload MP4 file < 100MB
   - Verify preview shows file name and size
   - Test file removal button
   - Verify submission works
-- [ ] Test audio capsule creation:
+- [x] Test audio capsule creation:
   - Upload MP3 file < 50MB
   - Verify upload works
-- [ ] Test photo capsule creation:
+- [x] Test photo capsule creation:
   - Upload JPEG/PNG < 50MB
   - Verify upload works
-- [ ] Test validation errors:
+- [x] Test validation errors:
   - Missing title → shows error
   - Missing unlock date → shows error
   - Past unlock date → shows error
@@ -7074,15 +7074,15 @@ export default function DateTimePicker({
   - Missing content → shows error
   - File too large → shows error
   - Wrong file type → shows error
-- [ ] Test success screen:
+- [x] Test success screen:
   - Magic link displays and is copyable
   - WhatsApp button opens wa.me link
   - "View Dashboard" redirects correctly
-- [ ] Test responsive layout:
+- [x] Test responsive layout:
   - Form works on mobile
   - Content type buttons stack appropriately
   - Date/time inputs work on mobile
-- [ ] Test file upload edge cases:
+- [x] Test file upload edge cases:
   - Very large files (>100MB) rejected
   - Wrong MIME type rejected
   - Upload progress shows (for large files)
