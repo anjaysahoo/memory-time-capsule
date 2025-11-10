@@ -8207,10 +8207,10 @@ Via Cloudflare Pages dashboard → Deployments → select previous deployment �
 
 #### Automated Verification:
 
-- [ ] Frontend builds successfully: `cd frontend && npm run build`
-- [ ] No build warnings or errors
-- [ ] Worker deploys without errors: `cd cloudflare-worker && npm run deploy`
-- [ ] All TypeScript checks pass in both projects
+- [x] Frontend builds successfully: `cd frontend && npm run build`
+- [x] No build warnings or errors
+- [x] Worker deploys without errors: `cd cloudflare-worker && npm run deploy`
+- [x] All TypeScript checks pass in both projects
 
 #### Manual Verification:
 
