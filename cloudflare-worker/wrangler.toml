@@ -1,0 +1,18 @@
+name = "memory-time-capsule-worker"
+main = "src/index.ts"
+compatibility_date = "2024-06-01"
+
+# KV Namespaces (create via Cloudflare dashboard or wrangler CLI)
+[[kv_namespaces]]
+binding = "KV"
+id = "406ac297767a41f2b2b69383d5e84de6"
+
+# Secrets (set via: wrangler secret put SECRET_NAME)
+# - ENCRYPTION_KEY
+# - GITHUB_OAUTH_CLIENT_ID
+# - GITHUB_OAUTH_CLIENT_SECRET
+# - GMAIL_CLIENT_ID
+# - GMAIL_CLIENT_SECRET
+# - FRONTEND_URL
+# - WORKER_URL
+

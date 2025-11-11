@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run deploy:*)",
+      "Bash(wrangler deployments:*)",
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(exit 0)",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__new_page",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__resize_page",
+      "Bash(npx tsc:*)",
+      "Bash(npx wrangler pages deploy:*)",
+      "Bash(npx wrangler pages project create memory-time-capsule --production-branch=master)",
+      "Bash(npx wrangler secret put:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
