@@ -156,27 +156,6 @@ auth.get('/session/:userId', async (c) => {
 });
 
 /**
- * Get GitHub access token (for internal use)
- * This endpoint should be protected in production
- * GET /api/auth/github/token/:userId
- */
-auth.get('/github/token/:userId', async (c) => {
-  const userId = c.req.param('userId');
-  
-  const token = await getEncryptedToken(
-    c.env.KV,
-    `github_token:${userId}`,
-    c.env.ENCRYPTION_KEY
-  );
-  
-  if (!token) {
-    return c.json({ error: 'Token not found' }, 404);
-  }
-  
-  return c.json({ token });
-});
-
-/**
  * Gmail OAuth authorization URL
  * GET /api/auth/gmail/authorize?userId=xxx
  */
