@@ -157,60 +157,70 @@ export default function Create() {
   // Success screen
   if (success) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardContent className="pt-6 text-center">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-3xl font-bold mb-4">Time Capsule Created!</h2>
-              <p className="text-muted-foreground mb-2">
-                Your capsule has been sealed and the recipient has been notified
-                via email.
-              </p>
-              <p className="text-sm text-muted-foreground/70 mb-8">
-                💡 Storage usage will update on your dashboard within 5-10 minutes
-              </p>
-
-              <div className="bg-muted p-6 rounded-lg mb-6">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Magic Link (for recipient):
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-2xl mx-auto">
+            <Card className="border-2 border-green-200 shadow-2xl scale-in">
+              <CardContent className="pt-12 pb-12 text-center">
+                <div className="mb-6 float">
+                  <span className="text-8xl">🎉</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                  Time Capsule Created!
+                </h2>
+                <p className="text-lg text-muted-foreground mb-2">
+                  Your capsule has been sealed and the recipient has been notified
+                  via email.
                 </p>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="text"
-                    value={success.magicLink}
-                    readOnly
-                    className="flex-1 text-sm"
-                  />
+                <p className="text-sm text-muted-foreground/70 mb-8 flex items-center justify-center gap-2">
+                  <span>💡</span>
+                  <span>Storage usage will update on your dashboard within 5-10 minutes</span>
+                </p>
+
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl mb-6 border-2 border-indigo-200">
+                  <p className="text-sm font-semibold text-gray-700 mb-3 flex items-center justify-center gap-2">
+                    <span>🔗</span>
+                    <span>Magic Link (for recipient):</span>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value={success.magicLink}
+                      readOnly
+                      className="flex-1 text-sm border-2 border-indigo-300 font-mono"
+                    />
+                    <Button
+                      variant="secondary"
+                      className="hover-lift"
+                      onClick={() => {
+                        navigator.clipboard.writeText(success.magicLink);
+                        alert("Link copied! ✅");
+                      }}
+                    >
+                      📋 Copy
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button
+                    onClick={() => window.open(success.whatsappLink, "_blank")}
+                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-lg py-6 shadow-lg hover:shadow-xl transition-all"
+                  >
+                    <span>📱</span>
+                    <span>Share via WhatsApp</span>
+                  </Button>
                   <Button
                     variant="secondary"
-                    onClick={() => {
-                      navigator.clipboard.writeText(success.magicLink);
-                      alert("Link copied!");
-                    }}
+                    onClick={() => navigate("/dashboard")}
+                    className="text-lg py-6 hover-lift"
                   >
-                    Copy
+                    📊 View Dashboard
                   </Button>
                 </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  onClick={() => window.open(success.whatsappLink, "_blank")}
-                  className="flex items-center justify-center gap-2"
-                >
-                  <span>📱</span>
-                  <span>Share via WhatsApp</span>
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => navigate("/dashboard")}
-                >
-                  View Dashboard
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -218,20 +228,28 @@ export default function Create() {
 
   // Form screen
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Create Time Capsule</h1>
-          <p className="text-muted-foreground">
-            Send a message, video, or photo to unlock in the future
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="mb-8 text-center slide-up">
+            <div className="mb-4">
+              <span className="inline-block text-6xl float">🎁</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Create Time Capsule
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Send a message, video, or photo to unlock in the future
+            </p>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
-          <Card>
+          <Card className="hover-lift border-2 border-transparent hover:border-indigo-200 transition-all shadow-lg slide-up">
             <CardContent className="pt-6">
-              <Label htmlFor="title">Capsule Title *</Label>
+              <Label htmlFor="title" className="text-base font-semibold">
+                <span className="mr-2">📝</span>Capsule Title *
+              </Label>
               <Input
                 id="title"
                 type="text"
@@ -241,15 +259,17 @@ export default function Create() {
                 }
                 placeholder="Happy Birthday! 🎂"
                 maxLength={100}
-                className="mt-2"
+                className="mt-2 border-2 focus:border-indigo-500"
               />
             </CardContent>
           </Card>
 
           {/* Unlock Date */}
-          <Card>
+          <Card className="hover-lift border-2 border-transparent hover:border-purple-200 transition-all shadow-lg slide-up" style={{animationDelay: '0.1s'}}>
             <CardContent className="pt-6">
-              <Label>Unlock Date & Time *</Label>
+              <Label className="text-base font-semibold">
+                <span className="mr-2">⏰</span>Unlock Date & Time *
+              </Label>
               <div className="mt-2">
                 <DateTimePicker
                   value={formData.unlockDate}
@@ -263,9 +283,11 @@ export default function Create() {
           </Card>
 
           {/* Recipient */}
-          <Card>
+          <Card className="hover-lift border-2 border-transparent hover:border-pink-200 transition-all shadow-lg slide-up" style={{animationDelay: '0.2s'}}>
             <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold mb-4">Recipient</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                <span className="mr-2">📧</span>Recipient
+              </h3>
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="recipientEmail">Email Address *</Label>
@@ -304,9 +326,11 @@ export default function Create() {
           </Card>
 
           {/* Content Type */}
-          <Card>
+          <Card className="hover-lift border-2 border-transparent hover:border-indigo-200 transition-all shadow-lg slide-up" style={{animationDelay: '0.3s'}}>
             <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold mb-4">Content Type *</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                <span className="mr-2">🎨</span>Content Type *
+              </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {(["text", "video", "audio", "photo"] as ContentType[]).map(
                   (type) => (
@@ -314,19 +338,23 @@ export default function Create() {
                       key={type}
                       type="button"
                       onClick={() => handleContentTypeChange(type)}
-                      className={`p-4 border-2 rounded-lg transition-colors ${
+                      className={`p-4 border-2 rounded-xl transition-all hover-lift ${
                         formData.contentType === type
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-muted-foreground"
+                          ? "border-purple-500 bg-gradient-to-br from-indigo-50 to-purple-100 shadow-lg"
+                          : "border-gray-200 hover:border-purple-300 bg-white"
                       }`}
                     >
-                      <div className="text-3xl mb-2">
+                      <div className="text-4xl mb-2">
                         {type === "text" && "📝"}
                         {type === "video" && "🎥"}
                         {type === "audio" && "🎵"}
                         {type === "photo" && "📷"}
                       </div>
-                      <div className="font-medium capitalize">{type}</div>
+                      <div className={`font-semibold capitalize ${
+                        formData.contentType === type ? "text-purple-700" : "text-gray-700"
+                      }`}>
+                        {type}
+                      </div>
                     </button>
                   )
                 )}
@@ -335,9 +363,11 @@ export default function Create() {
           </Card>
 
           {/* Content Input */}
-          <Card>
+          <Card className="hover-lift border-2 border-transparent hover:border-purple-200 transition-all shadow-lg slide-up" style={{animationDelay: '0.4s'}}>
             <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold mb-4">Your Content *</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                <span className="mr-2">✨</span>Your Content *
+              </h3>
 
               {formData.contentType === "text" ? (
                 <Textarea
@@ -403,20 +433,24 @@ export default function Create() {
           )}
 
           {/* Submit Button */}
-          <div className="flex gap-4">
+          <div className="flex gap-4 slide-up" style={{animationDelay: '0.5s'}}>
             <Button
               type="button"
               variant="secondary"
               onClick={() => navigate("/dashboard")}
               disabled={loading}
-              className="flex-1"
+              className="flex-1 text-base py-6"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="flex-1">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="flex-1 text-base py-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all"
+            >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   <span>
                     {file && file.size > 10 * 1024 * 1024
                       ? `Uploading... ${uploadProgress}%`
@@ -424,11 +458,12 @@ export default function Create() {
                   </span>
                 </>
               ) : (
-                "🔒 Lock Capsule"
+                <>🔒 Lock Capsule</>
               )}
             </Button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

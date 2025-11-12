@@ -62,31 +62,42 @@ export default function Auth() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Connect Your Accounts</h1>
-          <p className="text-xl text-muted-foreground">
-            We need access to GitHub (for storage) and Gmail (for sending
-            emails).
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-12 slide-up">
+            <div className="mb-6">
+              <span className="inline-block text-6xl float">🔗</span>
+            </div>
+            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Connect Your Accounts
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              Quick 2-step setup: GitHub for storage, Gmail for notifications
+            </p>
+          </div>
 
         {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertDescription>{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-6 scale-in border-2 shadow-lg">
+            <AlertDescription className="font-medium">{error}</AlertDescription>
           </Alert>
         )}
 
         {/* Show connection status */}
         {session && (
-          <Alert className="mb-6 border-blue-200 bg-blue-50">
-            <AlertDescription className="text-blue-700">
+          <Alert className="mb-6 border-2 border-blue-300 bg-gradient-to-r from-blue-50 to-indigo-50 scale-in shadow-lg">
+            <AlertDescription className="text-blue-700 font-medium flex items-center gap-2">
               {session.githubConnected && !session.gmailConnected && (
-                <>✅ GitHub connected. Now connect Gmail to continue.</>
+                <>
+                  <span className="text-2xl">✅</span>
+                  <span>GitHub connected! Now connect Gmail to continue.</span>
+                </>
               )}
               {session.githubConnected && session.gmailConnected && (
-                <>✅ Both accounts connected! Redirecting to dashboard...</>
+                <>
+                  <span className="text-2xl">🎉</span>
+                  <span>Both accounts connected! Redirecting to dashboard...</span>
+                </>
               )}
             </AlertDescription>
           </Alert>
@@ -94,24 +105,24 @@ export default function Auth() {
 
         <div className="space-y-6">
           {/* GitHub Connection Card */}
-          <Card>
+          <Card className="hover-lift border-2 border-transparent hover:border-indigo-200 transition-all shadow-lg slide-up">
             <CardHeader>
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">📁</span>
+                  <div className="w-16 h-16 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="text-3xl">📁</span>
                   </div>
                 </div>
                 <div className="flex-1">
-                  <CardTitle>
+                  <CardTitle className="text-2xl flex items-center gap-2">
                     GitHub
                     {session?.githubConnected && (
-                      <span className="ml-2 text-sm font-normal text-green-600">
-                        ✓ Connected
+                      <span className="inline-flex items-center gap-1 text-sm font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                        <span>✓</span> Connected
                       </span>
                     )}
                   </CardTitle>
-                  <CardDescription className="mt-2">
+                  <CardDescription className="mt-2 text-base">
                     We'll create a private repository to store your time capsule
                     content. You get 1GB of free storage.
                   </CardDescription>
@@ -158,24 +169,24 @@ export default function Auth() {
           </Card>
 
           {/* Gmail Connection Card */}
-          <Card>
+          <Card className="hover-lift border-2 border-transparent hover:border-purple-200 transition-all shadow-lg slide-up" style={{animationDelay: '0.1s'}}>
             <CardHeader>
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">📧</span>
+                  <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="text-3xl">📧</span>
                   </div>
                 </div>
                 <div className="flex-1">
-                  <CardTitle>
+                  <CardTitle className="text-2xl flex items-center gap-2">
                     Gmail
                     {session?.gmailConnected && (
-                      <span className="ml-2 text-sm font-normal text-green-600">
-                        ✓ Connected
+                      <span className="inline-flex items-center gap-1 text-sm font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                        <span>✓</span> Connected
                       </span>
                     )}
                   </CardTitle>
-                  <CardDescription className="mt-2">
+                  <CardDescription className="mt-2 text-base">
                     We'll send emails on your behalf when capsules are created
                     and unlocked.
                   </CardDescription>
@@ -230,20 +241,21 @@ export default function Auth() {
           </Card>
         </div>
 
-        <div className="mt-8 text-center text-sm text-muted-foreground">
+        <div className="mt-8 text-center text-sm text-muted-foreground slide-up" style={{animationDelay: '0.2s'}}>
           <p>
             By connecting your accounts, you agree to our{" "}
-            <a href="#" className="text-primary hover:underline">
+            <a href="#" className="text-indigo-600 hover:text-indigo-700 underline font-medium">
               Terms of Service
             </a>{" "}
             and{" "}
-            <a href="#" className="text-primary hover:underline">
+            <a href="#" className="text-indigo-600 hover:text-indigo-700 underline font-medium">
               Privacy Policy
             </a>
             .
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }
