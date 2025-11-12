@@ -82,53 +82,82 @@ auth.get('/github/callback', async (c) => {
       c.env.GITHUB_OAUTH_CLIENT_ID,
       c.env.GITHUB_OAUTH_CLIENT_SECRET
     );
-    
+
     // Get user info
     const octokit = createGitHubClient(accessToken);
     const githubUser = await getAuthenticatedUser(octokit);
-    
-    // Initialize repository with required files
-    const repo = await initializeRepository(
-      accessToken,
-      githubUser,
-      c.env.GMAIL_CLIENT_ID,
-      c.env.GMAIL_CLIENT_SECRET
-    );
-    
+
     // Generate user ID
     const userId = githubUser.id.toString();
-    
-    // Store encrypted token in KV
+
+    // Check if user already has a session
+    const existingSession = await getJson<UserSession>(c.env.KV, KV_KEYS.userSession(userId));
+
+    let repo;
+    let session: UserSession;
+
+    if (existingSession && existingSession.repository) {
+      // User already exists - reuse existing repository
+      console.log(`Existing user reconnecting: ${userId}, reusing repository: ${existingSession.repository.full_name}`);
+
+      repo = existingSession.repository;
+
+      // Update session with latest GitHub user info
+      session = {
+        ...existingSession,
+        githubUser: {
+          id: githubUser.id,
+          login: githubUser.login,
+          name: githubUser.name,
+          email: githubUser.email,
+          avatar_url: githubUser.avatar_url,
+        },
+        githubConnected: true,
+      };
+    } else {
+      // New user - create repository with required files
+      console.log(`New user connecting: ${userId}, creating new repository`);
+
+      repo = await initializeRepository(
+        accessToken,
+        githubUser,
+        c.env.GMAIL_CLIENT_ID,
+        c.env.GMAIL_CLIENT_SECRET
+      );
+
+      session = {
+        userId,
+        githubUser: {
+          id: githubUser.id,
+          login: githubUser.login,
+          name: githubUser.name,
+          email: githubUser.email,
+          avatar_url: githubUser.avatar_url,
+        },
+        repository: {
+          name: repo.name,
+          full_name: repo.full_name,
+          private: repo.private,
+          html_url: repo.html_url,
+          clone_url: repo.clone_url,
+        },
+        githubConnected: true,
+        gmailConnected: existingSession?.gmailConnected || false,
+        gmailEmail: existingSession?.gmailEmail,
+        createdAt: existingSession?.createdAt || new Date().toISOString(),
+      };
+    }
+
+    // Always update encrypted token (may have changed on reconnection)
     await storeEncryptedToken(
       c.env.KV,
-      `github_token:${userId}`,
+      KV_KEYS.githubToken(userId),
       accessToken,
       c.env.ENCRYPTION_KEY
     );
-    
-    // Store user session
-    const session: UserSession = {
-      userId,
-      githubUser: {
-        id: githubUser.id,
-        login: githubUser.login,
-        name: githubUser.name,
-        email: githubUser.email,
-        avatar_url: githubUser.avatar_url,
-      },
-      repository: {
-        name: repo.name,
-        full_name: repo.full_name,
-        private: repo.private,
-        html_url: repo.html_url,
-        clone_url: repo.clone_url,
-      },
-      githubConnected: true,
-      gmailConnected: false,
-      createdAt: new Date().toISOString(),
-    };
-    
-    await storeJson(c.env.KV, `user_session:${userId}`, session);
+
+    // Store/update user session
+    await storeJson(c.env.KV, KV_KEYS.userSession(userId), session);
     
     // Redirect to frontend auth callback with success
     return c.redirect(`${c.env.FRONTEND_URL}/auth/callback?userId=${userId}&success=true`);
