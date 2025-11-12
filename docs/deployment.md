@@ -128,6 +128,14 @@ curl https://your-worker-url.workers.dev/api/auth/github/authorize
 6. Check dashboard shows the capsule
 7. Open magic link (wait for unlock or test with past date)
 
+### Duplicate Repository Prevention Test
+
+1. Note the repository name created after first GitHub connection
+2. Revoke OAuth access: GitHub Settings → Applications → Revoke "Memory Time Capsule"
+3. Connect GitHub again from the app
+4. Verify SAME repository is used (no new repository created)
+5. Check worker logs for "Existing user reconnecting" message
+
 ### Integration Tests
 
 1. Create capsule with unlock date in past
@@ -182,6 +190,22 @@ wrangler kv:key get "github_token:USER_ID" --binding=KV
 - Check redirect URLs match exactly
 - Ensure scopes are properly requested
 - **Using gcloud-observability**: Query for all OAuth-related errors in the past 24 hours to identify patterns
+
+### GitHub Duplicate Repositories
+
+**Issue**: Multiple `timecapsule-storage-*` repositories created for same user
+
+**Cause**: User reconnecting GitHub OAuth creates duplicate repository (FIXED in Version 72794879-4369-4f9f-99ef-743ae5626541)
+
+**Solution**:
+- Update to latest worker version (contains duplicate prevention fix)
+- Existing users will reuse their repository on reconnection
+- See `GITHUB_DUPLICATE_REPO_FIX.md` for full details
+
+**Clean up old duplicates**:
+1. Check dashboard to identify active repository
+2. Only delete repositories NOT currently in use
+3. Never delete the repository shown in dashboard
 
 ### Email Sending Failures
 

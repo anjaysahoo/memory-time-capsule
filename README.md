@@ -50,3 +50,9 @@ npm run dev
 - Architecture: `thoughts/research/architecture.md`
 - Implementation Plan: `thoughts/plans/2025-11-05-memory-time-capsule-implementation.md`
 
+## Bug Fixes & Known Issues
+
+- GitHub Duplicate Repository Fix: `GITHUB_DUPLICATE_REPO_FIX.md`
+- Gmail Double Connection Fix: `GMAIL_DOUBLE_CONNECT_FIX.md`
+- Phase 9 OAuth Fixes: `PHASE9_FIXES_README.md`
+
