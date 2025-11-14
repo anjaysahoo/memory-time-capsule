@@ -166,6 +166,14 @@ export default function Open() {
                 From <strong>{capsule.senderName}</strong>
               </p>
 
+              {capsule.previewMessage && (
+                <div className="mb-8 p-4 bg-muted rounded-lg">
+                  <p className="text-sm italic text-muted-foreground">
+                    "{capsule.previewMessage}"
+                  </p>
+                </div>
+              )}
+
               <Countdown
                 targetDate={new Date(capsule.unlockAt * 1000)}
                 onComplete={loadCapsule}
@@ -253,10 +261,19 @@ export default function Open() {
                 </p>
               </div>
 
+              {capsule.additionalMessage && (
+                <div className="mb-6 p-4 bg-muted rounded-lg">
+                  <p className="text-sm whitespace-pre-wrap">
+                    {capsule.additionalMessage}
+                  </p>
+                </div>
+              )}
+
               <ContentViewer
                 contentType={capsule.contentType}
                 contentUrl={unlockedData.contentUrl}
                 textContent={unlockedData.capsule.textContent}
+                photoUrls={unlockedData.photoUrls}
               />
 
               <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">

@@ -53,6 +53,13 @@ export function adaptUserSession(backendSession: BackendUserSession): UserSessio
   };
 }
 
+export interface PhotoAttachment {
+  id: string;
+  filePath: string;
+  fileSize: number;
+  mimeType: string;
+}
+
 export interface Capsule {
   id: string;
   title: string;
@@ -62,6 +69,9 @@ export interface Capsule {
   senderName: string;
   contentType: 'video' | 'audio' | 'photo' | 'text';
   fileSize?: number;
+  previewMessage?: string;
+  additionalMessage?: string;
+  photos?: PhotoAttachment[];
   createdAt: number;
   unlockEmailSent: boolean;
   unlockedAt?: number;
@@ -87,6 +97,7 @@ export interface PinVerificationResponse {
     textContent?: string;
   };
   contentUrl: string | null;
+  photoUrls?: string[];
 }
 
 export interface DashboardData {

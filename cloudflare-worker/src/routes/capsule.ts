@@ -4,7 +4,7 @@ import { createGitHubClient } from '../lib/github.js';
 import { uploadToGitHubLFS, updateCapsulesJson, getStorageUsage } from '../lib/github-lfs.js';
 import { getEncryptedToken, getJson, storeJson, KV_KEYS } from '../utils/kv.js';
 import { generateSecureToken, sha256Hash } from '../utils/encryption.js';
-import { Capsule, CapsuleMetadata, CONTENT_LIMITS, ALLOWED_MIME_TYPES } from '../types/capsule.js';
+import { Capsule, CapsuleMetadata, PhotoAttachment, CONTENT_LIMITS, ALLOWED_MIME_TYPES, MAX_PHOTOS } from '../types/capsule.js';
 import { getValidAccessToken, sendEmail, GmailTokens } from '../lib/gmail.js';
 import { generateCreationEmail } from '../lib/email-templates.js';
 import {
@@ -27,6 +27,13 @@ capsule.post('/create', async (c) => {
     const userId = formData.get('userId') as string;
     const metadata = JSON.parse(formData.get('metadata') as string) as CapsuleMetadata;
     const file = formData.get('file') as File | null;
+
+    // Get all photo files (photo0, photo1, etc.)
+    const photoFiles: File[] = [];
+    for (let i = 0; i < MAX_PHOTOS; i++) {
+      const photo = formData.get(`photo${i}`) as File | null;
+      if (photo) photoFiles.push(photo);
+    }
 
     if (!userId) {
       return c.json({ error: 'Missing userId' }, 400);
@@ -51,6 +58,31 @@ capsule.post('/create', async (c) => {
     // Validate metadata
     if (!metadata.title || !metadata.unlockAt || !metadata.recipientEmail) {
       return c.json({ error: 'Missing required fields' }, 400);
+    }
+
+    // Validate preview message
+    if (metadata.previewMessage && metadata.previewMessage.length > CONTENT_LIMITS.previewMessage) {
+      return c.json({ error: `Preview message exceeds ${CONTENT_LIMITS.previewMessage} characters` }, 400);
+    }
+
+    // Validate additional message
+    if (metadata.additionalMessage && metadata.additionalMessage.length > CONTENT_LIMITS.additionalMessage) {
+      return c.json({ error: `Additional message exceeds ${CONTENT_LIMITS.additionalMessage} characters` }, 400);
+    }
+
+    // Validate photos
+    if (photoFiles.length > MAX_PHOTOS) {
+      return c.json({ error: `Maximum ${MAX_PHOTOS} photos allowed` }, 400);
+    }
+
+    for (const photo of photoFiles) {
+      if (photo.size > CONTENT_LIMITS.photo) {
+        return c.json({ error: `Photo size exceeds ${Math.floor(CONTENT_LIMITS.photo / 1024 / 1024)}MB limit` }, 400);
+      }
+      const allowedTypes = ALLOWED_MIME_TYPES.photo;
+      if (!allowedTypes.includes(photo.type)) {
+        return c.json({ error: `Invalid photo type: ${photo.type}` }, 400);
+      }
     }
 
     // Validate content
@@ -96,8 +128,9 @@ capsule.post('/create', async (c) => {
     const storageUsed = await getStorageUsage(octokit, owner, repo);
     const storageLimit = 1024 * 1024 * 1024; // 1GB
 
-    if (file && storageUsed + file.size > storageLimit) {
-      return c.json({ 
+    const totalFileSize = (file?.size || 0) + photoFiles.reduce((sum, p) => sum + p.size, 0);
+    if (totalFileSize > 0 && storageUsed + totalFileSize > storageLimit) {
+      return c.json({
         error: 'Storage limit exceeded',
         storageUsed,
         storageLimit,
@@ -123,6 +156,25 @@ capsule.post('/create', async (c) => {
       await uploadToGitHubLFS(octokit, owner, repo, filePath, fileContent);
     }
 
+    // Upload photos if present
+    const photos: PhotoAttachment[] = [];
+    for (let i = 0; i < photoFiles.length; i++) {
+      const photo = photoFiles[i];
+      const photoId = crypto.randomUUID();
+      const extension = photo.name.split('.').pop();
+      const photoPath = `capsules/${capsuleId}/photo-${i}.${extension}`;
+
+      const photoContent = await photo.arrayBuffer();
+      await uploadToGitHubLFS(octokit, owner, repo, photoPath, photoContent);
+
+      photos.push({
+        id: photoId,
+        filePath: photoPath,
+        fileSize: photo.size,
+        mimeType: photo.type,
+      });
+    }
+
     // Create capsule object
     const newCapsule: Capsule = {
       id: capsuleId,
@@ -136,6 +188,9 @@ capsule.post('/create', async (c) => {
       filePath,
       fileSize,
       textContent: metadata.textContent,
+      previewMessage: metadata.previewMessage,
+      additionalMessage: metadata.additionalMessage,
+      photos: photos.length > 0 ? photos : undefined,
       magicToken,
       magicTokenHash,
       createdAt: Math.floor(Date.now() / 1000),
@@ -180,6 +235,7 @@ capsule.post('/create', async (c) => {
         capsuleTitle: metadata.title,
         unlockDate,
         magicLink,
+        previewMessage: metadata.previewMessage,
       };
 
       const { html, text } = generateCreationEmail(emailData);
@@ -383,6 +439,14 @@ capsule.post('/view/:token/verify-pin', async (c) => {
       contentUrl = getContentUrl(c.env.WORKER_URL, tokenHash);
     }
 
+    // Generate photo URLs
+    const photoUrls: string[] = [];
+    if (capsule.photos && capsule.photos.length > 0) {
+      for (let i = 0; i < capsule.photos.length; i++) {
+        photoUrls.push(`${c.env.WORKER_URL}/api/capsule/photo/${tokenHash}/${i}`);
+      }
+    }
+
     // Update viewed timestamp (TODO: implement updateCapsuleMetadata helper)
     // For now, just return the data
 
@@ -393,6 +457,7 @@ capsule.post('/view/:token/verify-pin', async (c) => {
         textContent: capsule.textContent, // Include text content after verification
       },
       contentUrl,
+      photoUrls: photoUrls.length > 0 ? photoUrls : undefined,
     });
 
   } catch (error: any) {
@@ -486,6 +551,85 @@ capsule.get('/content/:tokenHash', async (c) => {
     console.error('Content proxy error:', error);
     return c.json({
       error: 'Failed to fetch content',
+      message: error.message,
+    }, 500);
+  }
+});
+
+/**
+ * Proxy endpoint to fetch individual photo from GitHub
+ */
+capsule.get('/photo/:tokenHash/:photoIndex', async (c) => {
+  try {
+    const tokenHash = c.req.param('tokenHash');
+    const photoIndex = parseInt(c.req.param('photoIndex'), 10);
+
+    if (isNaN(photoIndex) || photoIndex < 0) {
+      return c.json({ error: 'Invalid photo index' }, 400);
+    }
+
+    // Get token mapping from KV
+    const mapping = await getJson<any>(c.env.KV, KV_KEYS.tokenToRepo(tokenHash));
+
+    if (!mapping) {
+      return c.json({ error: 'Photo not found' }, 404);
+    }
+
+    // Get GitHub token
+    const githubToken = await getEncryptedToken(
+      c.env.KV,
+      KV_KEYS.githubToken(mapping.userId),
+      c.env.ENCRYPTION_KEY
+    );
+
+    if (!githubToken) {
+      return c.json({ error: 'Access token not found' }, 500);
+    }
+
+    // Fetch capsule from repository
+    const octokit = createGitHubClient(githubToken);
+    const [owner, repo] = mapping.repoFullName.split('/');
+    const capsule = await findCapsuleByTokenHash(octokit, owner, repo, tokenHash);
+
+    if (!capsule || !capsule.photos || photoIndex >= capsule.photos.length) {
+      return c.json({ error: 'Photo not found' }, 404);
+    }
+
+    // Verify capsule is unlocked
+    const now = Math.floor(Date.now() / 1000);
+    if (capsule.unlockAt > now || !capsule.unlockEmailSent) {
+      return c.json({ error: 'Photo not yet available' }, 403);
+    }
+
+    const photo = capsule.photos[photoIndex];
+
+    // Fetch photo from GitHub
+    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/${photo.filePath}`;
+    const response = await fetch(rawUrl, {
+      headers: {
+        'Authorization': `token ${githubToken}`,
+        'Accept': 'application/vnd.github.v3.raw',
+      },
+    });
+
+    if (!response.ok) {
+      console.error('GitHub photo fetch failed:', response.status, response.statusText);
+      return c.json({ error: 'Failed to fetch photo from repository' }, 500);
+    }
+
+    // Stream the photo back to client
+    return new Response(response.body, {
+      headers: {
+        'Content-Type': photo.mimeType,
+        'Content-Disposition': `inline; filename="${photo.id}.${photo.filePath.split('.').pop()}"`,
+        'Cache-Control': 'private, max-age=3600',
+      },
+    });
+
+  } catch (error: any) {
+    console.error('Photo proxy error:', error);
+    return c.json({
+      error: 'Failed to fetch photo',
       message: error.message,
     }, 500);
   }

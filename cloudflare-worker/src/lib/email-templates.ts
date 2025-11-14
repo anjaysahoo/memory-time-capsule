@@ -12,6 +12,7 @@ export interface CapsuleEmailData {
   magicLink: string;
   pin?: string;
   whatsappLink?: string;
+  previewMessage?: string;
 }
 
 /**
@@ -46,7 +47,15 @@ export function generateCreationEmail(data: CapsuleEmailData): { html: string; t
         🗓️ Unlocks: <strong>${data.unlockDate}</strong>
       </p>
     </div>
-    
+
+    ${data.previewMessage ? `
+    <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ff9800;">
+      <p style="margin: 0; font-size: 15px; font-style: italic; color: #666;">
+        "${data.previewMessage}"
+      </p>
+    </div>
+    ` : ''}
+
     <p style="font-size: 16px;">
       This capsule is currently sealed and waiting for the special moment. You'll receive another email with access details when it unlocks.
     </p>
@@ -74,7 +83,7 @@ ${data.senderName} has sent you a special time capsule: "${data.capsuleTitle}"
 
 Unlocks: ${data.unlockDate}
 
-This capsule is currently sealed. You'll receive another email with access details when it unlocks.
+${data.previewMessage ? `"${data.previewMessage}"\n\n` : ''}This capsule is currently sealed. You'll receive another email with access details when it unlocks.
 
 View countdown: ${data.magicLink}
 

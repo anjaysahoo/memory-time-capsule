@@ -22,6 +22,8 @@ interface FormData {
   recipientName: string;
   contentType: ContentType;
   textContent: string;
+  previewMessage: string;
+  additionalMessage: string;
 }
 
 export default function Create() {
@@ -34,8 +36,11 @@ export default function Create() {
     recipientName: "",
     contentType: "text",
     textContent: "",
+    previewMessage: "",
+    additionalMessage: "",
   });
   const [file, setFile] = useState<File | null>(null);
+  const [photos, setPhotos] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{
@@ -106,12 +111,19 @@ export default function Create() {
           contentType: formData.contentType,
           textContent:
             formData.contentType === "text" ? formData.textContent : undefined,
+          previewMessage: formData.previewMessage || undefined,
+          additionalMessage: formData.additionalMessage || undefined,
         })
       );
 
       if (file) {
         apiFormData.append("file", file);
       }
+
+      // Append photos
+      photos.forEach((photo, index) => {
+        apiFormData.append(`photo${index}`, photo);
+      });
 
       // Create capsule with progress tracking
       const response = await capsuleService.create(
@@ -152,6 +164,23 @@ export default function Create() {
   const handleContentTypeChange = (type: ContentType) => {
     setFormData({ ...formData, contentType: type });
     setFile(null); // Clear file when switching type
+  };
+
+  const handlePhotoSelect = (files: FileList | null) => {
+    if (!files) return;
+    const fileArray = Array.from(files);
+    const validPhotos = fileArray.filter(f => {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      const maxSize = 30 * 1024 * 1024; // 30MB
+      return allowedTypes.includes(f.type) && f.size <= maxSize;
+    });
+
+    const newPhotos = [...photos, ...validPhotos].slice(0, 5); // Max 5 photos
+    setPhotos(newPhotos);
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos(photos.filter((_, i) => i !== index));
   };
 
   // Success screen
@@ -334,6 +363,32 @@ export default function Create() {
             </CardContent>
           </Card>
 
+          {/* Preview Message (optional) */}
+          <Card>
+            <CardContent className="pt-6">
+              <Label htmlFor="previewMessage">
+                Preview Message (optional)
+                <span className="text-muted-foreground text-sm ml-2">
+                  Shown to recipient before unlock
+                </span>
+              </Label>
+              <Textarea
+                id="previewMessage"
+                value={formData.previewMessage}
+                onChange={(e) =>
+                  setFormData({ ...formData, previewMessage: e.target.value })
+                }
+                placeholder="A teaser message shown before the capsule unlocks... (max 500 characters)"
+                rows={3}
+                maxLength={500}
+                className="mt-2"
+              />
+              <div className="text-xs text-muted-foreground mt-1 text-right">
+                {formData.previewMessage.length}/500
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Content Input */}
           <Card>
             <CardContent className="pt-6">
@@ -357,6 +412,111 @@ export default function Create() {
                   onFileSelect={setFile}
                   onFileRemove={() => setFile(null)}
                 />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Additional Message (for media types) */}
+          {formData.contentType !== "text" && (
+            <Card>
+              <CardContent className="pt-6">
+                <Label htmlFor="additionalMessage">
+                  Additional Message (optional)
+                  <span className="text-muted-foreground text-sm ml-2">
+                    Message shown with the {formData.contentType}
+                  </span>
+                </Label>
+                <Textarea
+                  id="additionalMessage"
+                  value={formData.additionalMessage}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      additionalMessage: e.target.value,
+                    })
+                  }
+                  placeholder="Add a message to accompany your content... (max 1000 characters)"
+                  rows={4}
+                  maxLength={1000}
+                  className="mt-2"
+                />
+                <div className="text-xs text-muted-foreground mt-1 text-right">
+                  {formData.additionalMessage.length}/1000
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Photo Attachments */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="mb-4">
+                <Label htmlFor="photos">
+                  Photo Attachments (optional)
+                  <span className="text-muted-foreground text-sm ml-2">
+                    Up to 5 photos, max 30MB each
+                  </span>
+                </Label>
+              </div>
+
+              <input
+                id="photos"
+                type="file"
+                accept="image/jpeg,image/png,image/gif"
+                multiple
+                onChange={(e) => handlePhotoSelect(e.target.files)}
+                className="hidden"
+                disabled={photos.length >= 5}
+              />
+
+              {photos.length === 0 ? (
+                <label
+                  htmlFor="photos"
+                  className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-8 cursor-pointer hover:border-muted-foreground transition-colors"
+                >
+                  <div className="text-4xl mb-2">📷</div>
+                  <p className="text-sm text-muted-foreground">
+                    Click to add photos
+                  </p>
+                </label>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {photos.map((photo, index) => (
+                      <div
+                        key={index}
+                        className="relative group border rounded-lg overflow-hidden aspect-square"
+                      >
+                        <img
+                          src={URL.createObjectURL(photo)}
+                          alt={`Photo ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(index)}
+                          className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          ✕
+                        </button>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center">
+                          {(photo.size / 1024 / 1024).toFixed(1)} MB
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {photos.length < 5 && (
+                    <label
+                      htmlFor="photos"
+                      className="flex items-center justify-center border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-muted-foreground transition-colors"
+                    >
+                      <span className="text-sm text-muted-foreground">
+                        + Add more photos ({photos.length}/5)
+                      </span>
+                    </label>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
