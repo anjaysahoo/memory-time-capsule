@@ -290,6 +290,7 @@ auth.get('/gmail/callback', async (c) => {
           createRepositorySecret(octokit, owner, repo, 'GMAIL_REFRESH_TOKEN', tokens.refresh_token),
           createRepositorySecret(octokit, owner, repo, 'GMAIL_CLIENT_ID', c.env.GMAIL_CLIENT_ID),
           createRepositorySecret(octokit, owner, repo, 'GMAIL_CLIENT_SECRET', c.env.GMAIL_CLIENT_SECRET),
+          createRepositorySecret(octokit, owner, repo, 'FRONTEND_URL', c.env.FRONTEND_URL),
         ]);
       } catch (error) {
         // Ignore errors - secrets are only needed for automated unlock workflow

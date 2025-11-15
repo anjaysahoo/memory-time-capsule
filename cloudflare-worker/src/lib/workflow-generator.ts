@@ -43,6 +43,7 @@ jobs:
           GMAIL_REFRESH_TOKEN: \${{ secrets.GMAIL_REFRESH_TOKEN }}
           GMAIL_CLIENT_ID: \${{ secrets.GMAIL_CLIENT_ID }}
           GMAIL_CLIENT_SECRET: \${{ secrets.GMAIL_CLIENT_SECRET }}
+          FRONTEND_URL: \${{ secrets.FRONTEND_URL }}
         run: node unlock-script.js
       
       - name: Commit updated capsules.json
@@ -134,7 +135,7 @@ async function main() {
 // Email sending functions
 async function sendUnlockEmail(capsule, pin, gmail) {
   const unlockDate = new Date(capsule.unlockAt * 1000).toLocaleDateString();
-  const magicLink = \`https://your-app-domain.com/open?t=\${capsule.magicToken}\`;
+  const magicLink = \`\${process.env.FRONTEND_URL}/open?t=\${capsule.magicToken}\`;
 
   const html = generateUnlockEmailHtml(capsule, pin, magicLink, unlockDate);
   const text = generateUnlockEmailText(capsule, pin, magicLink, unlockDate);
@@ -149,7 +150,7 @@ async function sendUnlockEmail(capsule, pin, gmail) {
 }
 
 async function sendSenderNotification(capsule, gmail) {
-  const magicLink = \`https://your-app-domain.com/open?t=\${capsule.magicToken}\`;
+  const magicLink = \`\${process.env.FRONTEND_URL}/open?t=\${capsule.magicToken}\`;
   const whatsappLink = \`https://wa.me/?text=\${encodeURIComponent(
     \`Hi! Your time capsule "\${capsule.title}" is now unlocked! View it here: \${magicLink}\`
   )}\`;
