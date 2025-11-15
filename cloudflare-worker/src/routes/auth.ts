@@ -11,6 +11,7 @@ import { storeEncryptedToken, getEncryptedToken, storeJson, getJson, KV_KEYS } f
 import { generateSecureToken } from '../utils/encryption.js';
 import {
   exchangeCodeForGmailTokens,
+  getGmailUserEmail,
   GmailTokens,
 } from '../lib/gmail.js';
 
@@ -222,7 +223,7 @@ auth.get('/gmail/authorize', (c) => {
   authUrl.searchParams.set('client_id', c.env.GMAIL_CLIENT_ID);
   authUrl.searchParams.set('redirect_uri', redirectUri);
   authUrl.searchParams.set('response_type', 'code');
-  authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/gmail.send');
+  authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email');
   authUrl.searchParams.set('access_type', 'offline');
   authUrl.searchParams.set('prompt', 'consent');
   authUrl.searchParams.set('state', userId); // Pass userId as state for callback
@@ -258,9 +259,12 @@ auth.get('/gmail/callback', async (c) => {
       redirectUri
     );
 
+    // Get Gmail user's email address
+    const gmailEmail = await getGmailUserEmail(tokens.access_token);
+
     // Get existing user session
     const session = await getJson<UserSession>(c.env.KV, KV_KEYS.userSession(userId));
-    
+
     if (!session) {
       throw new Error('User session not found. Please connect GitHub first.');
     }
@@ -290,6 +294,7 @@ auth.get('/gmail/callback', async (c) => {
           createRepositorySecret(octokit, owner, repo, 'GMAIL_REFRESH_TOKEN', tokens.refresh_token),
           createRepositorySecret(octokit, owner, repo, 'GMAIL_CLIENT_ID', c.env.GMAIL_CLIENT_ID),
           createRepositorySecret(octokit, owner, repo, 'GMAIL_CLIENT_SECRET', c.env.GMAIL_CLIENT_SECRET),
+          createRepositorySecret(octokit, owner, repo, 'FRONTEND_URL', c.env.FRONTEND_URL),
         ]);
       } catch (error) {
         // Ignore errors - secrets are only needed for automated unlock workflow
@@ -299,7 +304,7 @@ auth.get('/gmail/callback', async (c) => {
 
     // Update user session
     session.gmailConnected = true;
-    session.gmailEmail = session.githubUser.email || undefined;
+    session.gmailEmail = gmailEmail;
     await storeJson(c.env.KV, KV_KEYS.userSession(session.userId), session);
 
     // Log for debugging

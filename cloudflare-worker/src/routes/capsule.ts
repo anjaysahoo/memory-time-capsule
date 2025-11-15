@@ -183,7 +183,7 @@ capsule.post('/create', async (c) => {
       recipientEmail: metadata.recipientEmail,
       recipientName: metadata.recipientName,
       senderName: session.githubUser.name || session.githubUser.login,
-      senderEmail: session.githubUser.email || 'noreply@timecapsule.app',
+      senderEmail: session.gmailEmail || session.githubUser.email || 'noreply@timecapsule.app',
       contentType: metadata.contentType,
       filePath,
       fileSize,

@@ -33,6 +33,7 @@ export interface UserSession {
   repoUrl: string;
   githubConnected: boolean;
   gmailConnected: boolean;
+  gmailEmail?: string;
   createdAt: string;
 }
 
@@ -49,6 +50,7 @@ export function adaptUserSession(backendSession: BackendUserSession): UserSessio
     repoUrl: backendSession.repository.html_url,
     githubConnected: backendSession.githubConnected,
     gmailConnected: backendSession.gmailConnected,
+    gmailEmail: backendSession.gmailEmail,
     createdAt: backendSession.createdAt,
   };
 }
