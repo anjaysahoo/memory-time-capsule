@@ -194,8 +194,29 @@ export async function sendEmail(
 }
 
 /**
+ * Get Gmail user's email address
+ *
+ * @param accessToken - Gmail access token
+ * @returns User's email address
+ */
+export async function getGmailUserEmail(accessToken: string): Promise<string> {
+  const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch Gmail user info: ${response.statusText}`);
+  }
+
+  const data = await response.json() as any;
+  return data.email;
+}
+
+/**
  * Get valid access token (refresh if expired)
- * 
+ *
  * @param tokens - Current Gmail tokens
  * @param clientId - Gmail OAuth client ID
  * @param clientSecret - Gmail OAuth client secret
