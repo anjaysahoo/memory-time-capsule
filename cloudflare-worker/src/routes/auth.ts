@@ -222,7 +222,7 @@ auth.get('/gmail/authorize', (c) => {
   authUrl.searchParams.set('client_id', c.env.GMAIL_CLIENT_ID);
   authUrl.searchParams.set('redirect_uri', redirectUri);
   authUrl.searchParams.set('response_type', 'code');
-  authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/gmail.send');
+  authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email');
   authUrl.searchParams.set('access_type', 'offline');
   authUrl.searchParams.set('prompt', 'consent');
   authUrl.searchParams.set('state', userId); // Pass userId as state for callback
@@ -258,9 +258,23 @@ auth.get('/gmail/callback', async (c) => {
       redirectUri
     );
 
+    // Fetch Gmail user email using access token
+    const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: {
+        'Authorization': `Bearer ${tokens.access_token}`,
+      },
+    });
+
+    if (!userInfoResponse.ok) {
+      throw new Error('Failed to fetch Gmail user info');
+    }
+
+    const userInfo = await userInfoResponse.json() as { email: string };
+    const gmailEmail = userInfo.email;
+
     // Get existing user session
     const session = await getJson<UserSession>(c.env.KV, KV_KEYS.userSession(userId));
-    
+
     if (!session) {
       throw new Error('User session not found. Please connect GitHub first.');
     }
@@ -298,9 +312,9 @@ auth.get('/gmail/callback', async (c) => {
       }
     }
 
-    // Update user session
+    // Update user session with Gmail email
     session.gmailConnected = true;
-    session.gmailEmail = session.githubUser.email || undefined;
+    session.gmailEmail = gmailEmail;
     await storeJson(c.env.KV, KV_KEYS.userSession(session.userId), session);
 
     // Log for debugging
