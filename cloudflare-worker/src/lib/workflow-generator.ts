@@ -168,9 +168,12 @@ async function sendSenderNotification(capsule, gmail) {
 }
 
 async function sendGmailMessage(gmail, to, subject, html, text) {
+  // Encode subject for RFC 2047 (MIME encoded-word) to handle emojis
+  const encodedSubject = '=?UTF-8?B?' + Buffer.from(subject).toString('base64') + '?=';
+
   const message = [
     \`To: \${to}\`,
-    \`Subject: \${subject}\`,
+    \`Subject: \${encodedSubject}\`,
     'MIME-Version: 1.0',
     'Content-Type: multipart/alternative; boundary="boundary"',
     '',
