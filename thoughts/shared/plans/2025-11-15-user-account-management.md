@@ -459,14 +459,14 @@ export default function Header() {
 - [ ] No console errors when running dev server: `npm run dev`
 
 #### Manual Verification:
-- [ ] Avatar is clickable and opens dropdown menu
-- [ ] Menu displays correct username (GitHub name or login)
-- [ ] Menu displays email (Gmail email preferred, falls back to GitHub email)
-- [ ] Connection status shows ✅ for connected accounts
-- [ ] Clicking "Log out" clears session and redirects to home page
-- [ ] After logout, user sees "Get Started" button instead of avatar
-- [ ] Menu closes when clicking outside
-- [ ] Menu aligns properly to the right of avatar
+- [x] Avatar is clickable and opens dropdown menu
+- [x] Menu displays correct username (GitHub name or login)
+- [x] Menu displays email (Gmail email preferred, falls back to GitHub email)
+- [x] Connection status shows ✅ for connected accounts
+- [x] Clicking "Log out" clears session and redirects to home page
+- [x] After logout, user sees "Get Started" button instead of avatar
+- [x] Menu closes when clicking outside
+- [x] Menu aligns properly to the right of avatar
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to next implementation.
 
