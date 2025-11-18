@@ -4,55 +4,37 @@
 
 @layer base {
   :root {
-    /* Brand Colors - "Twilight Bridge" Theme */
-    --primary: 250 70% 60%;              /* Cosmic Indigo #8B7EFF */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 38 92% 50%;             /* Warm Amber #F59E0B */
-    --secondary-foreground: 0 0% 100%;
-    --accent: 180 70% 50%;               /* Future Teal #26C9C9 */
-    --accent-foreground: 0 0% 100%;
+    /* Grayscale Theme */
+    --primary: 0 0% 0%;                  /* Pure black #000000 */
+    --primary-foreground: 0 0% 100%;     /* Pure white #FFFFFF */
+    --secondary: 0 0% 20%;               /* Dark gray #333333 */
+    --secondary-foreground: 0 0% 100%;   /* Pure white #FFFFFF */
+    --accent: 0 0% 10%;                  /* Very dark gray #1A1A1A */
+    --accent-foreground: 0 0% 100%;      /* Pure white #FFFFFF */
 
     /* Neutrals */
-    --background: 0 0% 100%;             /* Pure white */
-    --foreground: 240 10% 3.9%;          /* Near-black text */
-    --muted: 250 30% 96%;                /* Soft lavender tint #F7F6FB */
-    --muted-foreground: 240 5% 40%;      /* Medium gray text */
+    --background: 0 0% 100%;             /* Pure white #FFFFFF */
+    --foreground: 0 0% 0%;               /* Pure black #000000 */
+    --muted: 0 0% 96%;                   /* Very light gray #F5F5F5 */
+    --muted-foreground: 0 0% 40%;        /* Medium gray #666666 */
 
     /* UI Elements */
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --border: 250 20% 88%;               /* Subtle purple-gray #DDDAE8 */
-    --input: 250 20% 88%;
-    --ring: 250 70% 60%;                 /* Primary for focus rings */
-    --radius: 0.75rem;                   /* 12px - modern, friendly */
+    --card: 0 0% 100%;                   /* Pure white #FFFFFF */
+    --card-foreground: 0 0% 0%;          /* Pure black #000000 */
+    --popover: 0 0% 100%;                /* Pure white #FFFFFF */
+    --popover-foreground: 0 0% 0%;       /* Pure black #000000 */
+    --border: 0 0% 90%;                  /* Light gray #E5E5E5 */
+    --input: 0 0% 90%;                   /* Light gray #E5E5E5 */
+    --ring: 0 0% 0%;                     /* Pure black for focus rings */
+    --radius: 0.75rem;                   /* 12px */
 
-    /* Semantic Colors */
-    --success: 142 76% 36%;              /* Green #16A34A */
-    --warning: 38 92% 50%;               /* Amber (matches secondary) */
-    --destructive: 0 84% 60%;            /* Red #EF4444 */
-    --destructive-foreground: 0 0% 100%;
-  }
-
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --primary: 250 70% 65%;              /* Slightly lighter for contrast */
-    --primary-foreground: 240 10% 3.9%;
-    --secondary: 38 92% 55%;
-    --secondary-foreground: 240 10% 3.9%;
-    --accent: 180 70% 55%;
-    --accent-foreground: 240 10% 3.9%;
-    --muted: 240 10% 12%;
-    --muted-foreground: 240 5% 65%;
-    --card: 240 10% 8%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 8%;
-    --popover-foreground: 0 0% 98%;
-    --border: 240 10% 20%;
-    --input: 240 10% 20%;
-    --ring: 250 70% 65%;
+    /* Semantic Colors - Grayscale with icon differentiation */
+    --success: 0 0% 30%;                 /* Dark gray #4D4D4D */
+    --success-foreground: 0 0% 100%;     /* Pure white #FFFFFF */
+    --warning: 0 0% 50%;                 /* Medium gray #808080 */
+    --warning-foreground: 0 0% 0%;       /* Pure black #000000 */
+    --destructive: 0 0% 20%;             /* Dark gray #333333 */
+    --destructive-foreground: 0 0% 100%; /* Pure white #FFFFFF */
   }
   .theme {
     --animate-line-shadow: line-shadow 15s linear infinite;
@@ -101,11 +83,11 @@
 @keyframes pulse-glow {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 20px rgba(139, 126, 255, 0.3);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
   }
   50% {
     transform: scale(1.02);
-    box-shadow: 0 0 30px rgba(139, 126, 255, 0.5);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
   }
 }
 
@@ -130,53 +112,5 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-}
-
-@layer components {
-  /* Legacy button styles - prefer Tailwind utilities */
-  .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200;
-  }
-
-  .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95;
-  }
-
-  .btn-secondary {
-    @apply bg-muted text-foreground hover:bg-muted/80 border border-border;
-  }
-
-  .card {
-    @apply bg-card rounded-lg shadow-sm border border-border p-6;
-  }
-
-  /* Hero gradient background */
-  .hero-gradient {
-    @apply bg-gradient-to-br from-primary via-purple-700 to-secondary;
-  }
-
-  /* Utility classes */
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
-@theme inline {
-  @keyframes line-shadow {
-  0% {
-    background-position: 0 0;
-    }
-  100% {
-    background-position: 100% -100%;
-    }
-  }
-  @keyframes line-shadow {
-  0% {
-    background-position: 0 0;
-    }
-  100% {
-    background-position: 100% -100%;
-    }
   }
 }
