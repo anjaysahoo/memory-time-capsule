@@ -20,7 +20,20 @@
       "Bash(npx tsc:*)",
       "Bash(npx wrangler pages deploy:*)",
       "Bash(npx wrangler pages project create memory-time-capsule --production-branch=master)",
-      "Bash(npx wrangler secret put:*)"
+      "Bash(npx wrangler secret put:*)",
+      "SlashCommand(/describe_pr)",
+      "Bash(gh pr view:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(humanlayer thoughts sync:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh repo view:*)",
+      "Bash(npm run:*)",
+      "Bash(npx wrangler kv:*)",
+      "Bash(npx wrangler deploy)",
+      "mcp__shadcn__get_project_registries",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": []

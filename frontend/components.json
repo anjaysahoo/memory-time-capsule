@@ -1,0 +1,38 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "src/index.css",
+    "baseColor": "slate",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "iconLibrary": "lucide",
+  "registries": {
+    "@aceternity": "https://ui.aceternity.com/registry/{name}.json",
+    "@originui": "https://originui.com/r/{name}.json",
+    "@cult": "https://cult-ui.com/r/{name}.json",
+    "@kibo": "https://www.kibo-ui.com/r/{name}.json",
+    "@reui": "https://reui.io/r/{name}.json",
+    "@magicui": "https://magicui.design/r/{name}.json",
+    "@kokonutui": "https://kokonutui.com/r/{name}.json",
+    "@motion-primitives": "https://motion-primitives.com/c/{name}.json",
+    "@paceui": "https://ui.paceui.com/r/{name}.json",
+    "@react-bits": "https://reactbits.dev/r/{name}.json",
+    "@eldoraui": "https://eldoraui.site/r/{name}.json",
+    "@animate-ui": "https://animate-ui.com/r/{name}.json",
+    "@better-upload": "https://better-upload.com/r/{name}.json",
+    "@aliimam": "https://aliimam.in/r/{name}.json",
+    "@svgl": "https://svgl.app/r/{name}.json"
+  }
+}
