@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { SpinningText } from '@/components/ui/spinning-text';
 
 export default function Header() {
   const { session, isAuthenticated, clearAuth } = useAuthStore();
@@ -21,33 +22,41 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200">
+    <header className="bg-transparent fixed top-0 left-0 right-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary">
-            🎁 Time Capsule
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-32 h-32 relative flex items-center justify-center">
+              <SpinningText 
+                className="text-white text-sm font-bold"
+                duration={10}
+                radius={4.5}
+              >
+                Memory Time Capsule
+              </SpinningText>
+            </div>
           </Link>
 
           <nav className="flex items-center gap-6">
             {isAuthenticated() ? (
               <>
-                <Link to="/dashboard" className="text-gray-700 hover:text-gray-900">
+                <Link to="/dashboard" className="text-white/70 hover:text-white">
                   Dashboard
                 </Link>
-                <Button asChild>
+                <Button asChild variant="outline" className="bg-black text-white border-white/20 hover:bg-white/10">
                   <Link to="/create">Create Capsule</Link>
                 </Button>
 
                 {/* User Menu Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/10">
                       <Avatar>
                         <AvatarImage
                           src={session?.githubAvatar}
                           alt={session?.githubName || session?.githubLogin || 'User'}
                         />
-                        <AvatarFallback>
+                        <AvatarFallback className="bg-white text-black">
                           {session?.githubName?.charAt(0).toUpperCase() ||
                            session?.githubLogin?.charAt(0).toUpperCase() ||
                            'U'}
@@ -56,47 +65,43 @@ export default function Header() {
                     </Button>
                   </DropdownMenuTrigger>
 
-                  <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuContent align="end" className="w-56 bg-black border-white/20">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">
+                        <p className="text-sm font-medium leading-none text-white">
                           {session?.githubName || session?.githubLogin}
                         </p>
-                        <p className="text-xs leading-none text-muted-foreground">
+                        <p className="text-xs leading-none text-white/60">
                           {session?.gmailEmail || session?.githubEmail || 'No email'}
                         </p>
                       </div>
                     </DropdownMenuLabel>
 
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-white/10" />
 
-                    <DropdownMenuItem disabled className="cursor-default">
+                    <DropdownMenuItem disabled className="cursor-default text-white/60">
                       <div className="flex items-center justify-between w-full">
                         <span className="text-xs">GitHub</span>
                         <span>{session?.githubConnected ? '✅' : '❌'}</span>
                       </div>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem disabled className="cursor-default">
+                    <DropdownMenuItem disabled className="cursor-default text-white/60">
                       <div className="flex items-center justify-between w-full">
                         <span className="text-xs">Gmail</span>
                         <span>{session?.gmailConnected ? '✅' : '❌'}</span>
                       </div>
                     </DropdownMenuItem>
 
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-white/10" />
 
-                    <DropdownMenuItem onClick={handleLogout}>
+                    <DropdownMenuItem onClick={handleLogout} className="text-white hover:bg-white/10">
                       Log out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
-            ) : (
-              <Button asChild>
-                <Link to="/auth">Get Started</Link>
-              </Button>
-            )}
+            ) : null}
           </nav>
         </div>
       </div>

@@ -41,6 +41,11 @@ import {
   FileText,
   CheckCircle,
 } from "lucide-react";
+import { StarsBackground } from "@/components/animate-ui/components/backgrounds/stars";
+import { LineShadowText } from "@/components/ui/line-shadow-text";
+import { TextLoop } from "@/components/ui/text-loop";
+import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
 
 export default function Home() {
   const [searchParams] = useSearchParams();
@@ -76,47 +81,81 @@ export default function Home() {
   return (
     <div>
       {/* Section 1: Hero */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-purple-700 to-secondary">
-        {/* Content */}
-        <div className="relative z-10 max-w-6xl mx-auto px-4 py-32 text-center">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
-            Send Messages to the <span className="text-secondary">Future</span>
-          </h1>
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-32">
+        <StarsBackground starColor="#fff" className="absolute inset-0">
+          {/* Content */}
+          <div className="relative z-10 max-w-6xl mx-auto px-4 py-32 text-center flex flex-col items-center justify-center min-h-screen">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 flex flex-wrap items-center justify-center gap-4">
+              <span>Send Messages to the <LineShadowText className="italic" shadowColor="white">Future</LineShadowText></span>
+            </h1>
 
-          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
-            Create time capsules with videos, photos, and messages.
-            Automatically delivered to anyone, anywhere, at exactly the right moment.
-          </p>
+            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
+              Preserve memories with{" "}
+              <TextLoop interval={2} className="text-white font-semibold">
+                <span>video</span>
+                <span>photos</span>
+                <span>audio</span>
+                <span>message</span>
+              </TextLoop>
 
-          <Button
-            asChild
-            size="lg"
-            className="px-12 py-6 text-lg mb-8 bg-white text-primary hover:bg-white/90 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all"
-          >
-            <Link to={isAuthenticated() ? "/create" : "/auth"}>
-              {isAuthenticated() ? "Create Time Capsule" : "Get Started Free"}
-            </Link>
-          </Button>
+              . &nbsp; Delivered automatically to anyone, anywhere, at the perfect moment in time.
+            </p>
 
-          <div className="flex items-center justify-center gap-6 text-white/80 text-sm">
-            <Github className="w-5 h-5" />
-            <span>Powered by GitHub</span>
-            <Mail className="w-5 h-5" />
-            <span>Delivered via Gmail</span>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="relative px-12 py-6 text-lg mb-8 bg-black text-white border-white/20 hover:bg-white/10"
+            >
+              <Link to={isAuthenticated() ? "/create" : "/auth"}>
+                <div
+                  className={cn(
+                    "-inset-px pointer-events-none absolute rounded-[inherit] border-2 border-transparent border-inset [mask-clip:padding-box,border-box]",
+                    "[mask-composite:intersect] [mask-image:linear-gradient(transparent,transparent),linear-gradient(#000,#000)]"
+                  )}
+                >
+                  <motion.div
+                    className={cn(
+                      "absolute aspect-square bg-gradient-to-r from-transparent via-white to-white"
+                    )}
+                    animate={{
+                      offsetDistance: ["0%", "100%"],
+                    }}
+                    style={{
+                      width: 20,
+                      offsetPath: `rect(0 auto auto 0 round ${20}px)`,
+                    }}
+                    transition={{
+                      repeat: Number.POSITIVE_INFINITY,
+                      duration: 5,
+                      ease: "linear",
+                    }}
+                  />
+                </div>
+                {isAuthenticated() ? "Create Time Capsule" : "Get Started Free"}
+              </Link>
+            </Button>
+
+            <div className="flex items-center justify-center gap-6 text-white/80 text-sm">
+              <Github className="w-5 h-5" />
+              <span>Powered by GitHub</span>
+              <Mail className="w-5 h-5" />
+              <span>Delivered via Gmail</span>
+            </div>
+
+            <button
+              onClick={scrollToNextSection}
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
+              aria-label="Scroll to next section"
+            >
+              <ChevronDown className="w-8 h-8 text-white/70" />
+            </button>
           </div>
-
-          <button
-            onClick={scrollToNextSection}
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
-            aria-label="Scroll to next section"
-          >
-            <ChevronDown className="w-8 h-8 text-white/70" />
-          </button>
-        </div>
+        </StarsBackground>
       </section>
 
       {/* Section 2: Trust Indicators Bar */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
+      <section className="max-w-7xl mx-auto px-4 py-16 bg-white">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
             { icon: Github, title: "Powered by GitHub", subtitle: "Your data, your repo" },
@@ -126,29 +165,29 @@ export default function Home() {
           ].map((badge, i) => (
             <div
               key={i}
-              className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted/50 transition-colors"
+              className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-black/5 transition-colors"
             >
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <badge.icon className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 rounded-full bg-black/10 flex items-center justify-center">
+                <badge.icon className="w-6 h-6 text-black" />
               </div>
-              <h3 className="font-semibold text-sm text-center">{badge.title}</h3>
-              <p className="text-xs text-muted-foreground text-center">{badge.subtitle}</p>
+              <h3 className="font-semibold text-sm text-center text-black">{badge.title}</h3>
+              <p className="text-xs text-black/60 text-center">{badge.subtitle}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Section 3: How It Works Timeline */}
-      <section className="max-w-6xl mx-auto px-4 py-24 bg-muted/20">
-        <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
+      <section className="max-w-6xl mx-auto px-4 py-24 bg-black/5">
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-black">
           How It Works
         </h2>
 
         {/* Timeline */}
         <div className="relative grid grid-cols-1 md:grid-cols-3 gap-16">
           {/* Horizontal line (desktop) */}
-          <div className="hidden md:block absolute top-8 left-0 right-0 h-0.5 bg-border">
-            <div className="h-full bg-primary w-full" />
+          <div className="hidden md:block absolute top-8 left-0 right-0 h-0.5 bg-black/20">
+            <div className="h-full bg-black w-full" />
           </div>
 
           {/* Steps */}
@@ -177,18 +216,18 @@ export default function Home() {
           ].map((step, i) => (
             <div key={i} className="relative flex flex-col items-center gap-4">
               {/* Node */}
-              <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center relative z-10 shadow-lg">
+              <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center relative z-10 shadow-lg">
                 <step.icon className="w-8 h-8 text-white" />
               </div>
 
               {/* Content */}
               <div className="text-center">
-                <h3 className="text-2xl font-bold mb-2">{step.title}</h3>
-                <p className="text-muted-foreground mb-3">{step.description}</p>
+                <h3 className="text-2xl font-bold mb-2 text-black">{step.title}</h3>
+                <p className="text-black/60 mb-3">{step.description}</p>
                 <div className="flex gap-2 justify-center items-center flex-wrap">
-                  <Badge variant="secondary" className="text-xs">{step.badge}</Badge>
+                  <Badge variant="secondary" className="text-xs bg-black text-white">{step.badge}</Badge>
                   {step.supporting.map((Icon, idx) => (
-                    <Icon key={idx} className="w-4 h-4 text-muted-foreground" />
+                    <Icon key={idx} className="w-4 h-4 text-black/60" />
                   ))}
                 </div>
               </div>
@@ -261,8 +300,8 @@ export default function Home() {
       </section>
 
       {/* Section 5: Features Grid */}
-      <section className="max-w-6xl mx-auto px-4 py-24">
-        <h2 className="text-4xl font-bold text-center mb-16">Everything You Need</h2>
+      <section className="max-w-6xl mx-auto px-4 py-24 bg-white">
+        <h2 className="text-4xl font-bold text-center mb-16 text-black">Everything You Need</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
@@ -299,22 +338,22 @@ export default function Home() {
           ].map((feature, i) => (
             <Card
               key={i}
-              className="p-6 group hover:shadow-lg hover:-translate-y-2 transition-all duration-250"
+              className="p-6 group hover:shadow-lg hover:-translate-y-2 transition-all duration-250 border-black/10"
             >
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <feature.icon className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 rounded-lg bg-black/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <feature.icon className="w-6 h-6 text-black" />
               </div>
-              <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
+              <h3 className="text-xl font-bold mb-2 text-black">{feature.title}</h3>
+              <p className="text-black/60">{feature.description}</p>
             </Card>
           ))}
         </div>
       </section>
 
       {/* Section 6: Use Cases */}
-      <section className="max-w-7xl mx-auto px-4 py-32 bg-gradient-to-b from-background via-muted/10 to-background">
-        <h2 className="text-4xl font-bold text-center mb-4">Real Stories, Real Connections</h2>
-        <p className="text-xl text-center text-muted-foreground mb-16">
+      <section className="max-w-7xl mx-auto px-4 py-32 bg-white">
+        <h2 className="text-4xl font-bold text-center mb-4 text-black">Real Stories, Real Connections</h2>
+        <p className="text-xl text-center text-black/60 mb-16">
           See how people use time capsules to create meaningful moments
         </p>
 
@@ -325,28 +364,28 @@ export default function Home() {
               title: "Personal Milestones",
               quote: "I recorded a message to my daughter for her 18th birthday when she was 10. She'll receive it on her special day.",
               badge: "Birthday Messages",
-              gradient: "from-pink-500 to-rose-500",
+              gradient: "from-black/80 to-black/60",
             },
             {
               icon: Briefcase,
               title: "Professional Reminders",
               quote: "I use it for quarterly business reviews 90 days apart. Keeps me accountable to my goals.",
               badge: "Business Planning",
-              gradient: "from-blue-500 to-cyan-500",
+              gradient: "from-black/70 to-black/50",
             },
             {
               icon: Heart,
               title: "Long-Distance Connections",
               quote: "My partner's deployment is 6 months. I scheduled weekly messages to arrive every Sunday.",
               badge: "Relationship Building",
-              gradient: "from-red-500 to-pink-500",
+              gradient: "from-black/60 to-black/40",
             },
             {
               icon: Camera,
               title: "Family Time Capsules",
               quote: "Every New Year's Eve, we record a family video for the next year. It's become our tradition.",
               badge: "Family Traditions",
-              gradient: "from-purple-500 to-indigo-500",
+              gradient: "from-black/50 to-black/30",
             },
           ].map((useCase, i) => (
             <div
@@ -363,15 +402,15 @@ export default function Home() {
               {/* Content */}
               <div className={i % 2 === 1 ? 'md:order-1' : ''}>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
-                    <useCase.icon className="w-5 h-5 text-secondary" />
+                  <div className="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center">
+                    <useCase.icon className="w-5 h-5 text-black" />
                   </div>
-                  <h3 className="text-2xl font-bold">{useCase.title}</h3>
+                  <h3 className="text-2xl font-bold text-black">{useCase.title}</h3>
                 </div>
-                <blockquote className="text-lg text-muted-foreground mb-4 italic">
+                <blockquote className="text-lg text-black/60 mb-4 italic">
                   "{useCase.quote}"
                 </blockquote>
-                <Badge variant="secondary">{useCase.badge}</Badge>
+                <Badge variant="secondary" className="bg-black text-white">{useCase.badge}</Badge>
               </div>
             </div>
           ))}
@@ -379,11 +418,11 @@ export default function Home() {
       </section>
 
       {/* Section 7: Social Proof / Tech Stack */}
-      <section className="max-w-6xl mx-auto px-4 py-24 bg-muted/50">
+      <section className="max-w-6xl mx-auto px-4 py-24 bg-black/5">
         <div className="grid md:grid-cols-2 gap-16">
           {/* Tech Stack */}
           <div>
-            <h2 className="text-3xl font-bold mb-8">Built on Enterprise Tech</h2>
+            <h2 className="text-3xl font-bold mb-8 text-black">Built on Enterprise Tech</h2>
             <ul className="space-y-4">
               {[
                 { icon: Github, title: "GitHub Storage", subtitle: "Private repo (1GB free)" },
@@ -393,10 +432,10 @@ export default function Home() {
                 { icon: Code, title: "React + TypeScript", subtitle: "Open source, auditable" },
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
-                  <item.icon className="w-8 h-8 text-primary flex-shrink-0" />
+                  <item.icon className="w-8 h-8 text-black flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold">{item.title}</h4>
-                    <p className="text-sm text-muted-foreground">{item.subtitle}</p>
+                    <h4 className="font-semibold text-black">{item.title}</h4>
+                    <p className="text-sm text-black/60">{item.subtitle}</p>
                   </div>
                 </li>
               ))}
@@ -405,7 +444,7 @@ export default function Home() {
 
           {/* Security */}
           <div>
-            <h2 className="text-3xl font-bold mb-8">Security & Privacy</h2>
+            <h2 className="text-3xl font-bold mb-8 text-black">Security & Privacy</h2>
             <ul className="space-y-4">
               {[
                 { icon: Lock, title: "AES-256 Encryption", subtitle: "All files encrypted at rest" },
@@ -416,10 +455,10 @@ export default function Home() {
                 { icon: CheckCircle, title: "GDPR Compliant", subtitle: "EU data protection" },
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
-                  <item.icon className="w-8 h-8 text-primary flex-shrink-0" />
+                  <item.icon className="w-8 h-8 text-black flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold">{item.title}</h4>
-                    <p className="text-sm text-muted-foreground">{item.subtitle}</p>
+                    <h4 className="font-semibold text-black">{item.title}</h4>
+                    <p className="text-sm text-black/60">{item.subtitle}</p>
                   </div>
                 </li>
               ))}
@@ -429,9 +468,9 @@ export default function Home() {
       </section>
 
       {/* Section 8: FAQ */}
-      <section className="max-w-4xl mx-auto px-4 py-24 bg-background">
-        <h2 className="text-4xl font-bold text-center mb-4">Frequently Asked Questions</h2>
-        <p className="text-center text-muted-foreground mb-12">
+      <section className="max-w-4xl mx-auto px-4 py-24 bg-white">
+        <h2 className="text-4xl font-bold text-center mb-4 text-black">Frequently Asked Questions</h2>
+        <p className="text-center text-black/60 mb-12">
           Everything you need to know about Memory Time Capsule
         </p>
 
@@ -491,7 +530,7 @@ export default function Home() {
 
       {/* Section 9: Final CTA */}
       <section className="max-w-3xl mx-auto px-4 py-32 mb-16">
-        <div className="bg-gradient-to-br from-primary via-purple-700 to-secondary rounded-2xl p-16 text-center relative overflow-hidden">
+        <div className="bg-black rounded-2xl p-16 text-center relative overflow-hidden border border-white/10">
           <div className="relative z-10">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Ready to Send a Message to the Future?
@@ -504,9 +543,34 @@ export default function Home() {
             <Button
               asChild
               size="lg"
-              className="px-12 py-6 text-lg mb-4 bg-white text-primary hover:bg-white/90 shadow-xl"
+              variant="outline"
+              className="relative px-12 py-6 text-lg mb-4 bg-black text-white border-white/20 hover:bg-white/10"
             >
               <Link to={isAuthenticated() ? "/create" : "/auth"}>
+                <div
+                  className={cn(
+                    "-inset-px pointer-events-none absolute rounded-[inherit] border-2 border-transparent border-inset [mask-clip:padding-box,border-box]",
+                    "[mask-composite:intersect] [mask-image:linear-gradient(transparent,transparent),linear-gradient(#000,#000)]"
+                  )}
+                >
+                  <motion.div
+                    className={cn(
+                      "absolute aspect-square bg-gradient-to-r from-transparent via-white to-white"
+                    )}
+                    animate={{
+                      offsetDistance: ["0%", "100%"],
+                    }}
+                    style={{
+                      width: 20,
+                      offsetPath: `rect(0 auto auto 0 round ${20}px)`,
+                    }}
+                    transition={{
+                      repeat: Number.POSITIVE_INFINITY,
+                      duration: 5,
+                      ease: "linear",
+                    }}
+                  />
+                </div>
                 {isAuthenticated() ? "Create Time Capsule" : "Get Started Free"}
               </Link>
             </Button>

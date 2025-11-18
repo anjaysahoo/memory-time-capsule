@@ -54,6 +54,9 @@
     --input: 240 10% 20%;
     --ring: 250 70% 65%;
   }
+  .theme {
+    --animate-line-shadow: line-shadow 15s linear infinite;
+  }
 }
 
 @layer base {
@@ -156,5 +159,24 @@
   /* Utility classes */
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+@theme inline {
+  @keyframes line-shadow {
+  0% {
+    background-position: 0 0;
+    }
+  100% {
+    background-position: 100% -100%;
+    }
+  }
+  @keyframes line-shadow {
+  0% {
+    background-position: 0 0;
+    }
+  100% {
+    background-position: 100% -100%;
+    }
   }
 }
