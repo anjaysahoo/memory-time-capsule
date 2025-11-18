@@ -63,22 +63,53 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Enhanced focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Screen reader only content */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .sr-only:not(:focus):not(:active) {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  /* Visible on focus for skip links */
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
 }
 
 /* Custom Animations */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -86,22 +117,52 @@
   }
 }
 
-@keyframes drawLine {
-  from {
-    width: 0%;
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(139, 126, 255, 0.3);
   }
-  to {
-    width: 100%;
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(139, 126, 255, 0.5);
   }
 }
 
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
+@keyframes drawLine {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(3deg) scale(1.05); }
+  75% { transform: rotate(-3deg) scale(1.05); }
+}
+
+/* Animation Classes */
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-drawLine {
+  animation: drawLine 1.5s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 2s ease-in-out infinite;
+}
+
+.animate-wiggle {
+  animation: wiggle 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 /* Reduced Motion Support - Accessibility */
