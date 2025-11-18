@@ -65,6 +65,17 @@ export function getContentUrl(
 }
 
 /**
+ * Generate preview photo URL using token hash
+ * 
+ * @param workerUrl - Worker base URL
+ * @param tokenHash - Hash of the magic token (for secure access)
+ * @returns Worker proxy URL for preview photo
+ */
+export function getPreviewPhotoUrl(workerUrl: string, tokenHash: string): string {
+  return `${workerUrl}/api/capsule/preview/${tokenHash}`;
+}
+
+/**
  * Sanitize capsule data for public API response
  * Removes sensitive fields before sending to client
  * 
@@ -89,6 +100,8 @@ export function sanitizeCapsule(
     unlockEmailSent: capsule.unlockEmailSent,
     unlockedAt: capsule.unlockedAt,
     viewedAt: capsule.viewedAt,
+    previewMessage: capsule.previewMessage,       // Always include preview data
+    previewPhotoSize: capsule.previewPhotoSize,   // Include size for display prep
   };
 
   // Never include magic token or sender email in API response

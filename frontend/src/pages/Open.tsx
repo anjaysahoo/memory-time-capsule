@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import Countdown from "@/components/Countdown";
 import PinInput from "@/components/PinInput";
 import ContentViewer from "@/components/ContentViewer";
+import PreviewContent from "@/components/PreviewContent";
 
 type ViewState =
   | "loading"
@@ -166,6 +167,13 @@ export default function Open() {
                 From <strong>{capsule.senderName}</strong>
               </p>
 
+              {/* Preview Content (Photo + Message) */}
+              <PreviewContent
+                previewMessage={capsule.previewMessage}
+                previewPhotoUrl={capsuleData?.previewPhotoUrl}
+                className="mb-8"
+              />
+
               <Countdown
                 targetDate={new Date(capsule.unlockAt * 1000)}
                 onComplete={loadCapsule}
@@ -207,6 +215,13 @@ export default function Open() {
               <p className="text-muted-foreground mb-8">
                 From <strong>{capsule.senderName}</strong>
               </p>
+
+              {/* Preview Content (visible during PIN entry too) */}
+              <PreviewContent
+                previewMessage={capsule.previewMessage}
+                previewPhotoUrl={capsuleData?.previewPhotoUrl}
+                className="mb-8"
+              />
 
               <p className="text-lg font-medium mb-6">
                 Enter your 4-digit PIN to view
@@ -253,11 +268,21 @@ export default function Open() {
                 </p>
               </div>
 
-              <ContentViewer
-                contentType={capsule.contentType}
-                contentUrl={unlockedData.contentUrl}
-                textContent={unlockedData.capsule.textContent}
+              {/* Preview Content (Photo + Message) */}
+              <PreviewContent
+                previewMessage={capsule.previewMessage}
+                previewPhotoUrl={capsuleData?.previewPhotoUrl}
+                className="mb-8"
               />
+
+              {/* Main Content */}
+              <div className="mb-8">
+                <ContentViewer
+                  contentType={capsule.contentType}
+                  contentUrl={unlockedData.contentUrl}
+                  textContent={unlockedData.capsule.textContent}
+                />
+              </div>
 
               <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
                 <p>

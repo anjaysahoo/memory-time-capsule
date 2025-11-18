@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import FileUpload from "@/components/FileUpload";
+import PreviewPhotoUpload from "@/components/PreviewPhotoUpload";  // NEW
 import DateTimePicker from "@/components/DateTimePicker";
 
 type ContentType = "video" | "audio" | "photo" | "text";
@@ -22,6 +23,7 @@ interface FormData {
   recipientName: string;
   contentType: ContentType;
   textContent: string;
+  previewMessage: string;        // NEW: Optional preview message
 }
 
 export default function Create() {
@@ -34,8 +36,10 @@ export default function Create() {
     recipientName: "",
     contentType: "text",
     textContent: "",
+    previewMessage: "",             // NEW: Initialize empty
   });
   const [file, setFile] = useState<File | null>(null);
+  const [previewPhoto, setPreviewPhoto] = useState<File | null>(null);  // NEW
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{
@@ -106,11 +110,16 @@ export default function Create() {
           contentType: formData.contentType,
           textContent:
             formData.contentType === "text" ? formData.textContent : undefined,
+          previewMessage: formData.previewMessage || undefined,  // NEW: Include if not empty
         })
       );
 
       if (file) {
         apiFormData.append("file", file);
+      }
+
+      if (previewPhoto) {                                        // NEW: Append preview photo
+        apiFormData.append("previewPhoto", previewPhoto);
       }
 
       // Create capsule with progress tracking
@@ -358,6 +367,66 @@ export default function Create() {
                   onFileRemove={() => setFile(null)}
                 />
               )}
+            </CardContent>
+          </Card>
+
+          {/* Preview Section (Optional) */}
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-2">
+                Optional Preview
+              </h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Add a message or photo that will be visible on the countdown screen before unlock
+              </p>
+
+              <Alert className="mb-6 border-blue-200 bg-blue-50">
+                <AlertDescription className="text-sm text-blue-900">
+                  💡 <strong>Tip:</strong> The preview message and photo will be shown to the recipient 
+                  before and after the capsule unlocks, giving them a sneak peek of what's inside.
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-6">
+                {/* Preview Message */}
+                <div>
+                  <Label htmlFor="previewMessage">
+                    Preview Message (optional)
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">
+                    A short teaser or note (max 500 characters)
+                  </p>
+                  <Textarea
+                    id="previewMessage"
+                    value={formData.previewMessage}
+                    onChange={(e) =>
+                      setFormData({ ...formData, previewMessage: e.target.value })
+                    }
+                    placeholder="e.g., 'A special memory from our trip to Paris...'"
+                    rows={3}
+                    maxLength={500}
+                    className="italic text-muted-foreground"
+                  />
+                  <div className="text-xs text-muted-foreground text-right mt-1">
+                    {formData.previewMessage.length}/500
+                  </div>
+                </div>
+
+                {/* Preview Photo */}
+                <div>
+                  <Label htmlFor="previewPhoto">
+                    Preview Photo (optional)
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">
+                    An image to show on the countdown screen
+                  </p>
+                  <PreviewPhotoUpload
+                    file={previewPhoto}
+                    onFileSelect={setPreviewPhoto}
+                    onFileRemove={() => setPreviewPhoto(null)}
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 

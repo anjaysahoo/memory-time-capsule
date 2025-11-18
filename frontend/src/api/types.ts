@@ -63,6 +63,8 @@ export interface Capsule {
   recipientName?: string;
   senderName: string;
   contentType: 'video' | 'audio' | 'photo' | 'text';
+  previewMessage?: string;           // Optional preview message
+  previewPhotoSize?: number;         // Preview photo size (to know if photo exists)
   fileSize?: number;
   createdAt: number;
   unlockEmailSent: boolean;
@@ -81,6 +83,7 @@ export interface CapsuleViewResponse {
     remaining: number;
     exceeded: boolean;
   };
+  previewPhotoUrl?: string;  // URL to preview photo if it exists
 }
 
 export interface PinVerificationResponse {

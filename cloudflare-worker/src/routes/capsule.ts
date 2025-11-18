@@ -11,6 +11,7 @@ import {
   getAllCapsules,
   findCapsuleByTokenHash,
   getContentUrl,
+  getPreviewPhotoUrl,
   sanitizeCapsule,
 } from '../lib/capsule-retrieval.js';
 import { checkPinRateLimit, incrementPinAttempts } from '../utils/rate-limit.js';
@@ -27,6 +28,7 @@ capsule.post('/create', async (c) => {
     const userId = formData.get('userId') as string;
     const metadata = JSON.parse(formData.get('metadata') as string) as CapsuleMetadata;
     const file = formData.get('file') as File | null;
+    const previewPhotoFile = formData.get('previewPhoto') as File | null;
 
     if (!userId) {
       return c.json({ error: 'Missing userId' }, 400);
@@ -79,6 +81,31 @@ capsule.post('/create', async (c) => {
       }
     }
 
+    // Validate preview message if provided
+    if (metadata.previewMessage && metadata.previewMessage.length > CONTENT_LIMITS.previewMessage) {
+      return c.json({ 
+        error: `Preview message exceeds ${CONTENT_LIMITS.previewMessage} characters` 
+      }, 400);
+    }
+
+    // Validate preview photo if provided
+    if (previewPhotoFile) {
+      // Validate file size
+      if (previewPhotoFile.size > CONTENT_LIMITS.previewPhoto) {
+        return c.json({ 
+          error: `Preview photo size exceeds ${Math.floor(CONTENT_LIMITS.previewPhoto / 1024 / 1024)}MB limit` 
+        }, 400);
+      }
+
+      // Validate MIME type
+      const allowedTypes = ALLOWED_MIME_TYPES.previewPhoto;
+      if (!allowedTypes.includes(previewPhotoFile.type)) {
+        return c.json({ 
+          error: `Invalid preview photo type: ${previewPhotoFile.type}` 
+        }, 400);
+      }
+    }
+
     // Get GitHub token
     const githubToken = await getEncryptedToken(
       c.env.KV,
@@ -96,7 +123,10 @@ capsule.post('/create', async (c) => {
     const storageUsed = await getStorageUsage(octokit, owner, repo);
     const storageLimit = 1024 * 1024 * 1024; // 1GB
 
-    if (file && storageUsed + file.size > storageLimit) {
+    // Calculate total size to upload
+    const totalUploadSize = (file ? file.size : 0) + (previewPhotoFile ? previewPhotoFile.size : 0);
+
+    if (storageUsed + totalUploadSize > storageLimit) {
       return c.json({ 
         error: 'Storage limit exceeded',
         storageUsed,
@@ -123,6 +153,19 @@ capsule.post('/create', async (c) => {
       await uploadToGitHubLFS(octokit, owner, repo, filePath, fileContent);
     }
 
+    // Upload preview photo if present
+    let previewPhotoPath: string | undefined;
+    let previewPhotoSize: number | undefined;
+
+    if (previewPhotoFile) {
+      const extension = previewPhotoFile.name.split('.').pop();
+      previewPhotoPath = `capsules/${capsuleId}-preview.${extension}`;
+      previewPhotoSize = previewPhotoFile.size;
+
+      const photoContent = await previewPhotoFile.arrayBuffer();
+      await uploadToGitHubLFS(octokit, owner, repo, previewPhotoPath, photoContent);
+    }
+
     // Create capsule object
     const newCapsule: Capsule = {
       id: capsuleId,
@@ -136,6 +179,9 @@ capsule.post('/create', async (c) => {
       filePath,
       fileSize,
       textContent: metadata.textContent,
+      previewMessage: metadata.previewMessage,
+      previewPhotoPath,
+      previewPhotoSize,
       magicToken,
       magicTokenHash,
       createdAt: Math.floor(Date.now() / 1000),
@@ -280,6 +326,12 @@ capsule.get('/view/:token', async (c) => {
       };
     }
 
+    // Generate preview photo URL if preview exists
+    let previewPhotoUrl = null;
+    if (capsule.previewPhotoPath) {
+      previewPhotoUrl = getPreviewPhotoUrl(c.env.WORKER_URL, tokenHash);
+    }
+
     return c.json({
       capsule: sanitizeCapsule(capsule),
       status: {
@@ -288,6 +340,7 @@ capsule.get('/view/:token', async (c) => {
         requiresPin: isUnlocked && !!capsule.pin,
       },
       rateLimit: rateLimitInfo,
+      previewPhotoUrl,
     });
 
   } catch (error: any) {
@@ -486,6 +539,86 @@ capsule.get('/content/:tokenHash', async (c) => {
     console.error('Content proxy error:', error);
     return c.json({
       error: 'Failed to fetch content',
+      message: error.message,
+    }, 500);
+  }
+});
+
+/**
+ * Proxy endpoint to fetch preview photo from GitHub
+ * Available before unlock (unlike main content)
+ */
+capsule.get('/preview/:tokenHash', async (c) => {
+  try {
+    const tokenHash = c.req.param('tokenHash');
+
+    // Get token mapping from KV
+    const mapping = await getJson<any>(c.env.KV, KV_KEYS.tokenToRepo(tokenHash));
+    
+    if (!mapping) {
+      return c.json({ error: 'Preview not found' }, 404);
+    }
+
+    // Get GitHub token
+    const githubToken = await getEncryptedToken(
+      c.env.KV,
+      KV_KEYS.githubToken(mapping.userId),
+      c.env.ENCRYPTION_KEY
+    );
+
+    if (!githubToken) {
+      return c.json({ error: 'Access token not found' }, 500);
+    }
+
+    // Fetch capsule from repository
+    const octokit = createGitHubClient(githubToken);
+    const [owner, repo] = mapping.repoFullName.split('/');
+    const capsule = await findCapsuleByTokenHash(octokit, owner, repo, tokenHash);
+
+    if (!capsule || !capsule.previewPhotoPath) {
+      return c.json({ error: 'Preview photo not found' }, 404);
+    }
+
+    // NOTE: Unlike main content, preview photo is accessible before unlock
+    // This allows countdown view to show preview
+
+    // Fetch preview photo from GitHub with proper authentication
+    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/${capsule.previewPhotoPath}`;
+    const response = await fetch(rawUrl, {
+      headers: {
+        'Authorization': `token ${githubToken}`,
+        'Accept': 'application/vnd.github.v3.raw',
+      },
+    });
+
+    if (!response.ok) {
+      console.error('GitHub preview photo fetch failed:', response.status, response.statusText);
+      return c.json({ error: 'Failed to fetch preview photo from repository' }, 500);
+    }
+
+    // Determine content type from file extension
+    const extension = capsule.previewPhotoPath.split('.').pop()?.toLowerCase();
+    const contentTypeMap: Record<string, string> = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+    };
+    const contentType = contentTypeMap[extension || ''] || 'image/jpeg';
+
+    // Stream the content back to client
+    return new Response(response.body, {
+      headers: {
+        'Content-Type': contentType,
+        'Content-Disposition': `inline; filename="${capsule.id}-preview.${extension}"`,
+        'Cache-Control': 'public, max-age=86400', // Cache for 24 hours (preview doesn't change)
+      },
+    });
+
+  } catch (error: any) {
+    console.error('Preview photo proxy error:', error);
+    return c.json({
+      error: 'Failed to fetch preview photo',
       message: error.message,
     }, 500);
   }
