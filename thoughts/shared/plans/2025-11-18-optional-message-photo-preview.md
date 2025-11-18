@@ -858,9 +858,9 @@ if (previewPhoto) {                                        // NEW: Append previe
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Frontend type checking passes: `cd frontend && npm run typecheck`
-- [ ] Frontend builds successfully: `cd frontend && npm run build`
-- [ ] No linting errors: `cd frontend && npm run lint`
+- [x] Frontend type checking passes: `cd frontend && npm run typecheck` (passed)
+- [x] Frontend builds successfully: `cd frontend && npm run build` (passed)
+- [x] No linting errors: `cd frontend && npm run lint` (no errors in new/modified files)
 
 #### Manual Verification:
 - [ ] Preview section card appears at the end of the form with clear "Optional Preview" heading
