@@ -303,7 +303,7 @@ export default function Home() {
       </section>
 
       {/* Section 4: Interactive Demo */}
-      <section className="max-w-5xl mx-auto px-4 py-32 bg-gradient-to-b from-background to-muted/30">
+      <section className="max-w-5xl mx-auto px-4 py-32 bg-gradient-to-b from-white to-black/5">
         <motion.h2
           className="text-4xl md:text-5xl font-bold text-center mb-4"
           initial={{ opacity: 0, y: 30 }}
@@ -315,7 +315,7 @@ export default function Home() {
         </motion.h2>
 
         <motion.p
-          className="text-lg md:text-xl text-center text-muted-foreground mb-8"
+          className="text-lg md:text-xl text-center text-black/60 mb-8"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
@@ -363,7 +363,7 @@ export default function Home() {
                       transition={{ duration: 0.3, ease: "easeOut" }}
                     >
                       {/* Mockup of upload UI */}
-                      <div className="border-2 border-dashed border-muted rounded-lg p-12 text-center bg-muted/20 hover:border-black/20 transition-colors duration-200">
+                      <div className="border-2 border-dashed border-black/10 rounded-lg p-12 text-center bg-black/5 hover:border-black/20 transition-colors duration-200">
                         <motion.div
                           animate={{
                             y: [0, -8, 0]
@@ -374,10 +374,10 @@ export default function Home() {
                             ease: "easeInOut"
                           }}
                         >
-                          <FileVideo className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                          <FileVideo className="w-16 h-16 mx-auto mb-4 text-black/60" />
                         </motion.div>
-                        <p className="text-muted-foreground font-medium mb-2">Upload your content here</p>
-                        <p className="text-sm text-muted-foreground">Videos, photos, audio, or text messages</p>
+                        <p className="text-black/60 font-medium mb-2">Upload your content here</p>
+                        <p className="text-sm text-black/60">Videos, photos, audio, or text messages</p>
                       </div>
                     </motion.div>
                   )}
@@ -393,14 +393,14 @@ export default function Home() {
                     >
                       {/* Mockup of GitHub repo */}
                       <motion.div
-                        className="bg-muted/50 rounded-lg p-8"
+                        className="bg-black/5 rounded-lg p-8"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.4, ease: "easeOut" }}
                       >
-                        <Github className="w-12 h-12 mb-4 text-primary" />
+                        <Github className="w-12 h-12 mb-4 text-black" />
                         <p className="font-mono text-sm mb-2">capsules/birthday-message.mp4</p>
-                        <p className="text-sm text-muted-foreground">Stored securely in your private GitHub repository</p>
+                        <p className="text-sm text-black/60">Stored securely in your private GitHub repository</p>
                       </motion.div>
                     </motion.div>
                   )}
@@ -431,10 +431,10 @@ export default function Home() {
                             ease: "easeInOut"
                           }}
                         >
-                          <Mail className="w-12 h-12 mb-4 text-primary" />
+                          <Mail className="w-12 h-12 mb-4 text-black" />
                         </motion.div>
                         <h4 className="font-bold mb-2">You have a Time Capsule!</h4>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-black/60">
                           A message from the past is ready to open...
                         </p>
                       </motion.div>
@@ -446,13 +446,13 @@ export default function Home() {
 
             {/* Progress dots */}
             <div className="flex gap-2 justify-center mt-6">
-              {["create", "storage", "delivery"].map((tab, index) => (
+              {["create", "storage", "delivery"].map((tab) => (
                 <motion.div
                   key={tab}
                   className="w-2 h-2 rounded-full"
                   animate={{
                     scale: activeTab === tab ? 1.4 : 1,
-                    backgroundColor: activeTab === tab ? "hsl(var(--primary))" : "hsl(var(--muted))"
+                    backgroundColor: activeTab === tab ? "#000000" : "#F5F5F5"
                   }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
                 />
@@ -866,7 +866,7 @@ export default function Home() {
                 }}
               >
                 <AccordionItem value={`item-${i + 1}`}>
-                  <AccordionTrigger className="text-lg font-semibold hover:text-primary hover:bg-black/3 px-3 md:px-4 py-3 md:py-4 transition-all duration-200 rounded-lg group">
+                  <AccordionTrigger className="text-lg font-semibold hover:text-black hover:bg-black/5 px-3 md:px-4 py-3 md:py-4 transition-all duration-200 rounded-lg group">
                     <div className="flex items-center gap-3 text-left">
                       <motion.div
                         whileHover={{
@@ -883,7 +883,7 @@ export default function Home() {
                       </span>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground px-3 md:px-4 py-2">
+                  <AccordionContent className="text-black/60 px-3 md:px-4 py-2">
                     {faq.a}
                   </AccordionContent>
                 </AccordionItem>
@@ -893,7 +893,7 @@ export default function Home() {
         </motion.div>
 
         <motion.p
-          className="text-center mt-8 text-sm text-muted-foreground"
+          className="text-center mt-8 text-sm text-black/60"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, amount: 0.4 }}
@@ -902,7 +902,7 @@ export default function Home() {
           Still have questions?{' '}
           <motion.a
             href="/support"
-            className="text-primary hover:underline inline-flex items-center gap-1"
+            className="text-black hover:underline inline-flex items-center gap-1"
             whileHover={{ x: 4 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
           >

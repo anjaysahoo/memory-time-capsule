@@ -45,7 +45,7 @@ export default function Dashboard() {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="flex justify-center items-center min-h-[400px]">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <Loader2 className="h-12 w-12 animate-spin text-black" />
         </div>
       </div>
     );
@@ -78,7 +78,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Your Time Capsules</h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-black/60 mt-1">
             {dashboard.capsules.total} capsule
             {dashboard.capsules.total !== 1 ? "s" : ""} total
           </p>
@@ -98,30 +98,30 @@ export default function Dashboard() {
         <Card>
           <CardContent className="text-center pt-6">
             <div className="text-4xl mb-2">⏳</div>
-            <div className="text-3xl font-bold text-primary">
+            <div className="text-3xl font-bold text-black">
               {dashboard.capsules.pending}
             </div>
-            <div className="text-sm text-muted-foreground">Pending</div>
+            <div className="text-sm text-black/60">Pending</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="text-center pt-6">
             <div className="text-4xl mb-2">🎉</div>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-black">
               {dashboard.capsules.unlocked}
             </div>
-            <div className="text-sm text-muted-foreground">Unlocked</div>
+            <div className="text-sm text-black/60">Unlocked</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="text-center pt-6">
             <div className="text-4xl mb-2">⚠️</div>
-            <div className="text-3xl font-bold text-red-600">
+            <div className="text-3xl font-bold text-black">
               {dashboard.capsules.failed}
             </div>
-            <div className="text-sm text-muted-foreground">Failed</div>
+            <div className="text-sm text-black/60">Failed</div>
           </CardContent>
         </Card>
       </div>
@@ -132,7 +132,7 @@ export default function Dashboard() {
           <CardContent className="text-center py-12">
             <div className="text-6xl mb-4">📦</div>
             <h3 className="text-xl font-semibold mb-2">No capsules yet</h3>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-black/60 mb-6">
               Create your first time capsule to get started!
             </p>
             <Button onClick={() => navigate("/create")}>
@@ -157,7 +157,7 @@ export default function Dashboard() {
             href={dashboard.repository.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary-600 hover:underline"
+            className="text-black hover:underline font-semibold"
           >
             {dashboard.repository.name}
           </a>

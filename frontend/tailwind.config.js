@@ -120,16 +120,16 @@ export default {
   					width: '100%'
   				}
   			},
-  			'pulse-glow': {
-  				'0%, 100%': {
-  					transform: 'scale(1)',
-  					boxShadow: '0 0 20px rgba(139, 126, 255, 0.3)'
-  				},
-  				'50%': {
-  					transform: 'scale(1.02)',
-  					boxShadow: '0 0 30px rgba(139, 126, 255, 0.5)'
-  				}
-  			},
+			'pulse-glow': {
+				'0%, 100%': {
+					transform: 'scale(1)',
+					boxShadow: '0 0 20px rgba(255, 255, 255, 0.3)'
+				},
+				'50%': {
+					transform: 'scale(1.02)',
+					boxShadow: '0 0 30px rgba(255, 255, 255, 0.5)'
+				}
+			},
   			wiggle: {
   				'0%, 100%': {
   					transform: 'rotate(0deg)'
@@ -151,11 +151,11 @@ export default {
   			'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
   			wiggle: 'wiggle 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55)'
   		},
-  		boxShadow: {
-  			glow: '0 0 40px rgba(139, 126, 255, 0.4)',
-  			'glow-lg': '0 0 50px rgba(139, 126, 255, 0.5)',
-  			'glow-white': '0 0 50px rgba(255, 255, 255, 0.5)'
-  		},
+		boxShadow: {
+			glow: '0 0 40px rgba(255, 255, 255, 0.4)',
+			'glow-lg': '0 0 50px rgba(255, 255, 255, 0.5)',
+			'glow-white': '0 0 50px rgba(255, 255, 255, 0.5)'
+		},
   		backgroundImage: {
   			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
   			'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'
