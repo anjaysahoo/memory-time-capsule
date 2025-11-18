@@ -512,10 +512,10 @@ return c.json({
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Type checking passes: `cd cloudflare-worker && npm run typecheck`
-- [ ] Backend builds successfully: `cd cloudflare-worker && npm run build`
-- [ ] Frontend type checking passes: `cd frontend && npm run typecheck`
-- [ ] No linting errors in modified files: `cd cloudflare-worker && npm run lint`
+- [x] Type checking passes: `cd cloudflare-worker && npx tsc --noEmit` (passed)
+- [x] Backend builds successfully: N/A (no build script, type checking passed)
+- [x] Frontend type checking passes: `cd frontend && npm run build` (passed)
+- [x] No linting errors in modified files: `npx eslint src/api/types.ts` (passed)
 
 #### Manual Verification:
 - [ ] Backend accepts `previewPhoto` file in FormData during capsule creation
