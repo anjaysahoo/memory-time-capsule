@@ -1,17 +1,29 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import {
+  Loader2,
+  PartyPopper,
+  FileText,
+  Video,
+  Music,
+  Camera,
+  Lightbulb,
+  Smartphone,
+  Lock,
+  Copy
+} from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { capsuleService } from "@/api/services";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
+import { Field, FieldLabel, FieldDescription, FieldGroup } from "@/components/ui/field";
+import { InputGroup, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group";
 import FileUpload from "@/components/FileUpload";
-import PreviewPhotoUpload from "@/components/PreviewPhotoUpload";  // NEW
+import PreviewPhotoUpload from "@/components/PreviewPhotoUpload";
 import DateTimePicker from "@/components/DateTimePicker";
 
 type ContentType = "video" | "audio" | "photo" | "text";
@@ -166,60 +178,68 @@ export default function Create() {
   // Success screen
   if (success) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardContent className="pt-6 text-center">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-3xl font-bold mb-4">Time Capsule Created!</h2>
-              <p className="text-muted-foreground mb-2">
-                Your capsule has been sealed and the recipient has been notified
-                via email.
-              </p>
-              <p className="text-sm text-muted-foreground/70 mb-8">
-                💡 Storage usage will update on your dashboard within 5-10 minutes
-              </p>
-
-              <div className="bg-muted p-6 rounded-lg mb-6">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Magic Link (for recipient):
+      <div className="min-h-screen bg-black text-white">
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-2xl mx-auto">
+            <Card className="bg-zinc-900 border-zinc-800">
+              <CardContent className="pt-6 text-center">
+                <div className="mb-4 flex justify-center">
+                  <PartyPopper className="h-16 w-16 text-blue-500" />
+                </div>
+                <h2 className="text-3xl font-bold mb-4 text-white">Time Capsule Created!</h2>
+                <p className="text-gray-400 mb-2">
+                  Your capsule has been sealed and the recipient has been notified
+                  via email.
                 </p>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="text"
-                    value={success.magicLink}
-                    readOnly
-                    className="flex-1 text-sm"
-                  />
+                <p className="text-sm text-gray-500 mb-8 flex items-center justify-center gap-2">
+                  <Lightbulb className="h-4 w-4" />
+                  Storage usage will update on your dashboard within 5-10 minutes
+                </p>
+
+                <div className="bg-zinc-800 p-6 rounded-lg mb-6 border border-zinc-700">
+                  <p className="text-sm text-gray-400 mb-2">
+                    Magic Link (for recipient):
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value={success.magicLink}
+                      readOnly
+                      className="flex-1 text-sm bg-zinc-700 border-zinc-600 text-white"
+                    />
+                    <Button
+                      variant="secondary"
+                      className="bg-zinc-700 hover:bg-zinc-600 text-white border-zinc-600"
+                      onClick={() => {
+                        navigator.clipboard.writeText(success.magicLink);
+                        alert("Link copied!");
+                      }}
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button
+                    onClick={() => window.open(success.whatsappLink, "_blank")}
+                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Smartphone className="h-4 w-4" />
+                    <span>Share via WhatsApp</span>
+                  </Button>
                   <Button
                     variant="secondary"
-                    onClick={() => {
-                      navigator.clipboard.writeText(success.magicLink);
-                      alert("Link copied!");
-                    }}
+                    className="bg-zinc-800 hover:bg-zinc-700 text-white border-zinc-700"
+                    onClick={() => navigate("/dashboard")}
                   >
-                    Copy
+                    View Dashboard
                   </Button>
                 </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  onClick={() => window.open(success.whatsappLink, "_blank")}
-                  className="flex items-center justify-center gap-2"
-                >
-                  <span>📱</span>
-                  <span>Share via WhatsApp</span>
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => navigate("/dashboard")}
-                >
-                  View Dashboard
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -227,138 +247,159 @@ export default function Create() {
 
   // Form screen
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Create Time Capsule</h1>
-          <p className="text-muted-foreground">
-            Send a message, video, or photo to unlock in the future
-          </p>
-        </div>
+    <div className="min-h-screen bg-black text-white">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2 text-white">Create Time Capsule</h1>
+            <p className="text-gray-400">
+              Send a message, video, or photo to unlock in the future
+            </p>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="pt-6">
-              <Label htmlFor="title">Capsule Title *</Label>
-              <Input
-                id="title"
-                type="text"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                placeholder="Happy Birthday! 🎂"
-                maxLength={100}
-                className="mt-2"
-              />
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="title" className="text-white">Capsule Title *</FieldLabel>
+                  <InputGroup className="bg-zinc-800 border-zinc-700">
+                    <InputGroupInput
+                      id="title"
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
+                      placeholder="Happy Birthday!"
+                      maxLength={100}
+                      className="bg-transparent text-white placeholder:text-gray-500"
+                    />
+                  </InputGroup>
+                </Field>
+              </FieldGroup>
             </CardContent>
           </Card>
 
           {/* Unlock Date */}
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="pt-6">
-              <Label>Unlock Date & Time *</Label>
-              <div className="mt-2">
-                <DateTimePicker
-                  value={formData.unlockDate}
-                  onChange={(date) =>
-                    setFormData({ ...formData, unlockDate: date })
-                  }
-                  minDate={new Date()}
-                />
-              </div>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel className="text-white">Unlock Date & Time *</FieldLabel>
+                  <div className="mt-2">
+                    <DateTimePicker
+                      value={formData.unlockDate}
+                      onChange={(date) =>
+                        setFormData({ ...formData, unlockDate: date })
+                      }
+                      minDate={new Date()}
+                    />
+                  </div>
+                </Field>
+              </FieldGroup>
             </CardContent>
           </Card>
 
           {/* Recipient */}
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold mb-4">Recipient</h3>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="recipientEmail">Email Address *</Label>
-                  <Input
-                    id="recipientEmail"
-                    type="email"
-                    value={formData.recipientEmail}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        recipientEmail: e.target.value,
-                      })
-                    }
-                    placeholder="friend@example.com"
-                    className="mt-2"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="recipientName">Name (optional)</Label>
-                  <Input
-                    id="recipientName"
-                    type="text"
-                    value={formData.recipientName}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        recipientName: e.target.value,
-                      })
-                    }
-                    placeholder="Alex Smith"
-                    className="mt-2"
-                  />
-                </div>
-              </div>
+              <h3 className="text-lg font-semibold mb-4 text-white">Recipient</h3>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="recipientEmail" className="text-white">Email Address *</FieldLabel>
+                  <InputGroup className="bg-zinc-800 border-zinc-700">
+                    <InputGroupInput
+                      id="recipientEmail"
+                      type="email"
+                      value={formData.recipientEmail}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          recipientEmail: e.target.value,
+                        })
+                      }
+                      placeholder="friend@example.com"
+                      className="bg-transparent text-white placeholder:text-gray-500"
+                    />
+                  </InputGroup>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="recipientName" className="text-white">Name (optional)</FieldLabel>
+                  <InputGroup className="bg-zinc-800 border-zinc-700">
+                    <InputGroupInput
+                      id="recipientName"
+                      type="text"
+                      value={formData.recipientName}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          recipientName: e.target.value,
+                        })
+                      }
+                      placeholder="Alex Smith"
+                      className="bg-transparent text-white placeholder:text-gray-500"
+                    />
+                  </InputGroup>
+                </Field>
+              </FieldGroup>
             </CardContent>
           </Card>
 
           {/* Content Type */}
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold mb-4">Content Type *</h3>
+              <h3 className="text-lg font-semibold mb-4 text-white">Content Type *</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {(["text", "video", "audio", "photo"] as ContentType[]).map(
-                  (type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => handleContentTypeChange(type)}
-                      className={`p-4 border-2 rounded-lg transition-colors ${
-                        formData.contentType === type
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-muted-foreground"
-                      }`}
-                    >
-                      <div className="text-3xl mb-2">
-                        {type === "text" && "📝"}
-                        {type === "video" && "🎥"}
-                        {type === "audio" && "🎵"}
-                        {type === "photo" && "📷"}
-                      </div>
-                      <div className="font-medium capitalize">{type}</div>
-                    </button>
-                  )
+                  (type) => {
+                    const Icon = type === "text" ? FileText : type === "video" ? Video : type === "audio" ? Music : Camera;
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => handleContentTypeChange(type)}
+                        className={`p-4 border-2 rounded-lg transition-colors ${
+                          formData.contentType === type
+                            ? "border-blue-500 bg-blue-500/20"
+                            : "border-zinc-700 hover:border-zinc-600 bg-zinc-800"
+                        }`}
+                      >
+                        <div className="flex justify-center mb-2">
+                          <Icon className="h-8 w-8 text-white" />
+                        </div>
+                        <div className="font-medium capitalize text-white">{type}</div>
+                      </button>
+                    );
+                  }
                 )}
               </div>
             </CardContent>
           </Card>
 
           {/* Content Input */}
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold mb-4">Your Content *</h3>
+              <h3 className="text-lg font-semibold mb-4 text-white">Your Content *</h3>
 
               {formData.contentType === "text" ? (
-                <Textarea
-                  value={formData.textContent}
-                  onChange={(e) =>
-                    setFormData({ ...formData, textContent: e.target.value })
-                  }
-                  placeholder="Write your message here... (max 10,000 characters)"
-                  rows={10}
-                  maxLength={10000}
-                  className="font-mono"
-                />
+                <FieldGroup>
+                  <Field>
+                    <InputGroup className="bg-zinc-800 border-zinc-700">
+                      <InputGroupTextarea
+                        value={formData.textContent}
+                        onChange={(e) =>
+                          setFormData({ ...formData, textContent: e.target.value })
+                        }
+                        placeholder="Write your message here... (max 10,000 characters)"
+                        rows={10}
+                        maxLength={10000}
+                        className="font-mono bg-transparent text-white placeholder:text-gray-500 min-h-[250px]"
+                      />
+                    </InputGroup>
+                  </Field>
+                </FieldGroup>
               ) : (
                 <FileUpload
                   contentType={formData.contentType}
@@ -371,62 +412,65 @@ export default function Create() {
           </Card>
 
           {/* Preview Section (Optional) */}
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold mb-2">
+              <h3 className="text-lg font-semibold mb-2 text-white">
                 Optional Preview
               </h3>
-              <p className="text-sm text-muted-foreground mb-6">
+              <p className="text-sm text-gray-400 mb-6">
                 Add a message or photo that will be visible on the countdown screen before unlock
               </p>
 
-              <Alert className="mb-6 border-blue-200 bg-blue-50">
-                <AlertDescription className="text-sm text-blue-900">
-                  💡 <strong>Tip:</strong> The preview message and photo will be shown to the recipient 
-                  before and after the capsule unlocks, giving them a sneak peek of what's inside.
+              <Alert className="mb-6 border-blue-800 bg-blue-950/30">
+                <AlertDescription className="text-sm text-blue-300 flex items-start gap-2">
+                  <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span><strong>Tip:</strong> The preview message and photo will be shown to the recipient
+                  before and after the capsule unlocks, giving them a sneak peek of what's inside.</span>
                 </AlertDescription>
               </Alert>
 
-              <div className="space-y-6">
+              <FieldGroup>
                 {/* Preview Message */}
-                <div>
-                  <Label htmlFor="previewMessage">
+                <Field>
+                  <FieldLabel htmlFor="previewMessage" className="text-white">
                     Preview Message (optional)
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1 mb-2">
+                  </FieldLabel>
+                  <FieldDescription className="text-gray-400">
                     A short teaser or note (max 500 characters)
-                  </p>
-                  <Textarea
-                    id="previewMessage"
-                    value={formData.previewMessage}
-                    onChange={(e) =>
-                      setFormData({ ...formData, previewMessage: e.target.value })
-                    }
-                    placeholder="e.g., 'A special memory from our trip to Paris...'"
-                    rows={3}
-                    maxLength={500}
-                    className="italic text-muted-foreground"
-                  />
-                  <div className="text-xs text-muted-foreground text-right mt-1">
+                  </FieldDescription>
+                  <InputGroup className="bg-zinc-800 border-zinc-700">
+                    <InputGroupTextarea
+                      id="previewMessage"
+                      value={formData.previewMessage}
+                      onChange={(e) =>
+                        setFormData({ ...formData, previewMessage: e.target.value })
+                      }
+                      placeholder="e.g., 'A special memory from our trip to Paris...'"
+                      rows={3}
+                      maxLength={500}
+                      className="italic bg-transparent text-white placeholder:text-gray-500"
+                    />
+                  </InputGroup>
+                  <div className="text-xs text-gray-400 text-right mt-1">
                     {formData.previewMessage.length}/500
                   </div>
-                </div>
+                </Field>
 
                 {/* Preview Photo */}
-                <div>
-                  <Label htmlFor="previewPhoto">
+                <Field>
+                  <FieldLabel htmlFor="previewPhoto" className="text-white">
                     Preview Photo (optional)
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1 mb-2">
+                  </FieldLabel>
+                  <FieldDescription className="text-gray-400">
                     An image to show on the countdown screen
-                  </p>
+                  </FieldDescription>
                   <PreviewPhotoUpload
                     file={previewPhoto}
                     onFileSelect={setPreviewPhoto}
                     onFileRemove={() => setPreviewPhoto(null)}
                   />
-                </div>
-              </div>
+                </Field>
+              </FieldGroup>
             </CardContent>
           </Card>
 
@@ -439,15 +483,15 @@ export default function Create() {
 
           {/* Upload Progress (for files > 10MB) */}
           {loading && file && file.size > 10 * 1024 * 1024 && (
-            <Card>
+            <Card className="bg-zinc-900 border-zinc-800">
               <CardContent className="pt-6">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">Uploading {file.name}...</span>
-                    <span className="text-muted-foreground">{uploadProgress}%</span>
+                    <span className="font-medium text-white">Uploading {file.name}...</span>
+                    <span className="text-gray-400">{uploadProgress}%</span>
                   </div>
                   <Progress value={uploadProgress} className="w-full" />
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center justify-between text-xs text-gray-400">
                     <span>
                       {(file.size / 1024 / 1024).toFixed(1)} MB
                     </span>
@@ -478,11 +522,11 @@ export default function Create() {
               variant="secondary"
               onClick={() => navigate("/dashboard")}
               disabled={loading}
-              className="flex-1"
+              className="flex-1 bg-zinc-800 text-white hover:bg-zinc-700 border-zinc-700"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="flex-1">
+            <Button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -493,11 +537,15 @@ export default function Create() {
                   </span>
                 </>
               ) : (
-                "🔒 Lock Capsule"
+                <>
+                  <Lock className="mr-2 h-4 w-4" />
+                  <span>Lock Capsule</span>
+                </>
               )}
             </Button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
