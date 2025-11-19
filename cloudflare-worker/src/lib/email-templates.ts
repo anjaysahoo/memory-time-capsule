@@ -3,24 +3,26 @@
  */
 
 export interface CapsuleEmailData {
-  recipientEmail: string;
-  recipientName?: string;
-  senderName: string;
-  senderEmail: string;
-  capsuleTitle: string;
-  unlockDate: string;
-  magicLink: string;
-  pin?: string;
-  whatsappLink?: string;
+    recipientEmail: string;
+    recipientName?: string;
+    senderName: string;
+    senderEmail: string;
+    capsuleTitle: string;
+    unlockDate: string;
+    magicLink: string;
+    pin?: string;
+    whatsappLink?: string;
 }
 
 /**
  * Generate creation email (sent to recipient when capsule is created)
  */
-export function generateCreationEmail(data: CapsuleEmailData): { html: string; text: string } {
-  const recipientName = data.recipientName || data.recipientEmail;
-  
-  const html = `
+export function generateCreationEmail(
+    data: CapsuleEmailData
+): { html: string; text: string } {
+    const recipientName = data.recipientName || data.recipientEmail;
+
+    const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,144 +30,210 @@ export function generateCreationEmail(data: CapsuleEmailData): { html: string; t
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Time Capsule from ${data.senderName}</title>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px;">🎁 Time Capsule Sealed</h1>
-  </div>
-  
-  <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
-    <p style="font-size: 16px;">Hi ${recipientName},</p>
-    
-    <p style="font-size: 16px;">
-      <strong>${data.senderName}</strong> has sent you a special time capsule that will unlock on:
-    </p>
-    
-    <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
-      <h2 style="margin: 0 0 10px 0; color: #667eea; font-size: 20px;">${data.capsuleTitle}</h2>
-      <p style="margin: 0; font-size: 18px; color: #666;">
-        🗓️ Unlocks: <strong>${data.unlockDate}</strong>
+<body style="margin:0; padding:32px 16px; background:#000; color:#f5f5f5; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:640px; margin:0 auto;">
+    <header style="text-align:center; margin-bottom:24px;">
+      <h1 style="margin:0 0 8px; font-size:28px; font-weight:700; letter-spacing:0.03em;">
+        Send Messages to the Future
+      </h1>
+      <p style="margin:0; font-size:14px; opacity:0.7;">
+        A memory has been quietly sealed for you.
       </p>
-    </div>
-    
-    <p style="font-size: 16px;">
-      This capsule is currently sealed and waiting for the special moment. You'll receive another email with access details when it unlocks.
-    </p>
-    
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${data.magicLink}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; display: inline-block;">
-        View Countdown
-      </a>
-    </div>
-    
-    <p style="font-size: 14px; color: #666; margin-top: 30px;">
-      This is an automated message from Memory Time Capsule. The capsule was created by ${data.senderName} (${data.senderEmail}).
-    </p>
+    </header>
+
+    <main style="background:#050509; border:1px solid #1f2933; border-radius:14px; padding:24px 20px;">
+      <p style="margin:0 0 12px; font-size:16px; line-height:1.7;">
+        Hi ${recipientName},
+      </p>
+
+      <p style="margin:0 0 12px; font-size:16px; line-height:1.7;">
+        <em>${data.senderName}</em> has created a time capsule for you. It will open at the perfect moment in time:
+      </p>
+
+      <section style="margin:18px 0 20px; padding:18px 16px; border-radius:10px; border:1px solid #273549; background:#020306;">
+        <div style="font-size:13px; text-transform:uppercase; letter-spacing:0.15em; opacity:0.7; margin-bottom:6px;">
+          Capsule
+        </div>
+        <h2 style="margin:0 0 6px; font-size:20px; font-weight:600;">
+          ${data.capsuleTitle}
+        </h2>
+        <p style="margin:0; font-size:15px; line-height:1.6;">
+          🗓 <span style="opacity:0.8;">Unlocks on</span>
+          <em style="font-style:italic;"> ${data.unlockDate}</em>
+        </p>
+      </section>
+
+      <p style="margin:0 0 20px; font-size:15px; line-height:1.7; opacity:0.9;">
+        Until then, your message is safely preserved in the dark of space. You’ll get another email as soon as it unlocks.
+      </p>
+
+      <div style="text-align:center; margin:26px 0 10px;">
+        <a
+          href="${data.magicLink}"
+          style="
+            display:inline-block;
+            padding:12px 28px;
+            border-radius:999px;
+            background:#f5f5f5;
+            color:#000;
+            text-decoration:none;
+            font-size:15px;
+            font-weight:600;
+          "
+        >
+          View Countdown
+        </a>
+      </div>
+
+      <p style="margin:24px 0 0; font-size:12px; line-height:1.6; opacity:0.6;">
+        This is an automated message from <em>Memory Time Capsule</em>.  
+        Created by <em>${data.senderName}</em> (${data.senderEmail}).
+      </p>
+    </main>
   </div>
 </body>
 </html>
   `.trim();
 
-  const text = `
+    const text = `
 Time Capsule from ${data.senderName}
 
 Hi ${recipientName},
 
-${data.senderName} has sent you a special time capsule: "${data.capsuleTitle}"
+${data.senderName} has created a time capsule for you.
 
-Unlocks: ${data.unlockDate}
+Title: "${data.capsuleTitle}"
+Unlocks on: ${data.unlockDate}
 
-This capsule is currently sealed. You'll receive another email with access details when it unlocks.
+You can view the live countdown here:
+${data.magicLink}
 
-View countdown: ${data.magicLink}
-
----
+—
 This is an automated message from Memory Time Capsule.
-The capsule was created by ${data.senderName} (${data.senderEmail}).
+Created by ${data.senderName} (${data.senderEmail}).
   `.trim();
 
-  return { html, text };
+    return { html, text };
 }
 
 /**
  * Generate unlock email (sent to recipient when capsule unlocks)
  */
-export function generateUnlockEmail(data: CapsuleEmailData): { html: string; text: string } {
-  const recipientName = data.recipientName || data.recipientEmail;
-  const pin = data.pin || '0000';
-  
-  const html = `
+export function generateUnlockEmail(
+    data: CapsuleEmailData
+): { html: string; text: string } {
+    const recipientName = data.recipientName || data.recipientEmail;
+    const pin = data.pin || '0000';
+
+    const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Time Capsule is Unlocked!</title>
+  <title>Your Time Capsule is Unlocked</title>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px;">🎉 Time Capsule Unlocked!</h1>
-  </div>
-  
-  <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
-    <p style="font-size: 16px;">Hi ${recipientName},</p>
-    
-    <p style="font-size: 16px;">
-      The time capsule "<strong>${data.capsuleTitle}</strong>" from <strong>${data.senderName}</strong> is now unlocked!
-    </p>
-    
-    <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
-      <h2 style="margin: 0 0 10px 0; color: #667eea; font-size: 20px;">Access Your Capsule</h2>
-      <p style="margin: 10px 0; font-size: 16px;">
-        🔑 PIN Code: <strong style="font-size: 24px; color: #667eea;">${pin}</strong>
+<body style="margin:0; padding:32px 16px; background:#000; color:#f5f5f5; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:640px; margin:0 auto;">
+    <header style="text-align:center; margin-bottom:24px;">
+      <h1 style="margin:0 0 8px; font-size:28px; font-weight:700; letter-spacing:0.03em;">
+        Your Time Capsule is Unlocked
+      </h1>
+      <p style="margin:0; font-size:14px; opacity:0.7;">
+        A message from the past has arrived.
       </p>
-    </div>
-    
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${data.magicLink}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; display: inline-block;">
-        Open Time Capsule
-      </a>
-    </div>
-    
-    ${data.whatsappLink ? `
-    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
-      <p style="margin: 0; font-size: 14px; color: #2e7d32;">
-        💬 <strong>Quick Access:</strong> Click here to open in WhatsApp
+    </header>
+
+    <main style="background:#050509; border:1px solid #1f2933; border-radius:14px; padding:24px 20px;">
+      <p style="margin:0 0 12px; font-size:16px; line-height:1.7;">
+        Hi ${recipientName},
       </p>
-      <div style="text-align: center; margin: 10px 0;">
-        <a href="${data.whatsappLink}" style="background: #25d366; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 14px; display: inline-block;">
-          Open in WhatsApp
+
+      <p style="margin:0 0 12px; font-size:16px; line-height:1.7;">
+        The capsule <em>"${data.capsuleTitle}"</em> from <em>${data.senderName}</em> is now open.
+      </p>
+
+      <section style="margin:18px 0 20px; padding:18px 16px; border-radius:10px; border:1px solid #273549; background:#020306;">
+        <div style="font-size:13px; text-transform:uppercase; letter-spacing:0.15em; opacity:0.7; margin-bottom:6px;">
+          Access Pin
+        </div>
+        <p style="margin:4px 0 0; font-size:26px; font-weight:600; letter-spacing:0.25em; text-align:center;">
+          ${pin}
+        </p>
+      </section>
+
+      <div style="text-align:center; margin:26px 0 10px;">
+        <a
+          href="${data.magicLink}"
+          style="
+            display:inline-block;
+            padding:12px 28px;
+            border-radius:999px;
+            background:#f5f5f5;
+            color:#000;
+            text-decoration:none;
+            font-size:15px;
+            font-weight:600;
+          "
+        >
+          Open Time Capsule
         </a>
       </div>
-    </div>
-    ` : ''}
-    
-    <p style="font-size: 14px; color: #666; margin-top: 30px;">
-      This is an automated message from Memory Time Capsule. The capsule was created by ${data.senderName} (${data.senderEmail}).
-    </p>
+
+      ${
+        data.whatsappLink
+            ? `
+      <section style="margin-top:20px; padding:14px 12px; border-radius:10px; border:1px solid #1d3b2a; background:#02130a;">
+        <p style="margin:0 0 8px; font-size:14px; line-height:1.6; opacity:0.9;">
+          💬 <em>Optional:</em> keep this moment close by opening it on WhatsApp.
+        </p>
+        <div style="text-align:center; margin-top:4px;">
+          <a
+            href="${data.whatsappLink}"
+            style="
+              display:inline-block;
+              padding:10px 22px;
+              border-radius:999px;
+              background:#25d366;
+              color:#000;
+              text-decoration:none;
+              font-size:14px;
+              font-weight:600;
+            "
+          >
+            Open in WhatsApp
+          </a>
+        </div>
+      </section>
+      `
+            : ''
+    }
+
+      <p style="margin:24px 0 0; font-size:12px; line-height:1.6; opacity:0.6;">
+        This is an automated message from <em>Memory Time Capsule</em>.  
+        Capsule created by <em>${data.senderName}</em> (${data.senderEmail}).
+      </p>
+    </main>
   </div>
 </body>
 </html>
   `.trim();
 
-  const text = `
-Your Time Capsule is Unlocked!
+    const text = `
+Your Time Capsule is Unlocked
 
 Hi ${recipientName},
 
-The time capsule "${data.capsuleTitle}" from ${data.senderName} is now unlocked!
+The capsule "${data.capsuleTitle}" from ${data.senderName} is now open.
 
-Access Your Capsule:
-PIN Code: ${pin}
-
+PIN: ${pin}
 Open your capsule: ${data.magicLink}
+${data.whatsappLink ? `WhatsApp quick open: ${data.whatsappLink}` : ''}
 
-${data.whatsappLink ? `Quick Access via WhatsApp: ${data.whatsappLink}` : ''}
-
----
+—
 This is an automated message from Memory Time Capsule.
-The capsule was created by ${data.senderName} (${data.senderEmail}).
+Capsule created by ${data.senderName} (${data.senderEmail}).
   `.trim();
 
-  return { html, text };
+    return { html, text };
 }
-

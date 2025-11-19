@@ -3,10 +3,10 @@
  */
 
 export function generateUnlockWorkflow(
-  gmailClientId: string,
-  gmailClientSecret: string
+    gmailClientId: string,
+    gmailClientSecret: string
 ): string {
-  return `name: Unlock Time Capsules
+    return `name: Unlock Time Capsules
 
 on:
   schedule:
@@ -60,7 +60,7 @@ jobs:
  * Generate unlock script that runs in GitHub Actions
  */
 export function generateUnlockScript(): string {
-  return `// unlock-script.js - Runs in GitHub Actions to unlock capsules
+    return `// unlock-script.js - Runs in GitHub Actions to unlock capsules
 
 const fs = require('fs');
 const { google } = require('googleapis');
@@ -207,19 +207,46 @@ function generateUnlockEmailHtml(capsule, pin, magicLink, unlockDate) {
   return \`
 <!DOCTYPE html>
 <html>
-<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 30px; text-align: center;">
-    <h1 style="color: white; margin: 0;">🎉 Your Time Capsule is Unlocked!</h1>
-  </div>
-  <div style="padding: 30px; background: #f9f9f9;">
-    <p>Hi,</p>
-    <p>Your time capsule from <strong>\${capsule.senderName}</strong> is now unlocked!</p>
-    <h2>\${capsule.title}</h2>
-    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
-      <p style="margin: 0; font-weight: bold;">Your PIN:</p>
-      <p style="font-size: 32px; text-align: center; letter-spacing: 8px; margin: 10px 0;">\${pin}</p>
+<body style="margin:0; padding:32px 16px; background:#000; color:#f5f5f5; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:640px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:24px;">
+      <h1 style="margin:0 0 8px; font-size:26px; font-weight:700; letter-spacing:0.03em;">
+        Your Time Capsule is Unlocked
+      </h1>
+      <p style="margin:0; font-size:14px; opacity:0.7;">
+        A message from the past has arrived.
+      </p>
     </div>
-    <p><a href="\${magicLink}" style="background: #f5576c; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px;">Open Time Capsule</a></p>
+
+    <div style="background:#050509; border:1px solid #1f2933; border-radius:14px; padding:24px 20px;">
+      <p style="margin:0 0 12px; font-size:16px; line-height:1.7;">
+        Your time capsule from <em>\${capsule.senderName}</em> is now open.
+      </p>
+
+      <h2 style="margin:4px 0 10px; font-size:20px; font-weight:600;">
+        \${capsule.title}
+      </h2>
+
+      <div style="margin:18px 0 20px; padding:18px 16px; border-radius:10px; border:1px solid #273549; background:#020306;">
+        <div style="font-size:13px; text-transform:uppercase; letter-spacing:0.15em; opacity:0.7; margin-bottom:6px;">
+          Access Pin
+        </div>
+        <p style="margin:4px 0 0; font-size:26px; font-weight:600; letter-spacing:0.25em; text-align:center;">
+          \${pin}
+        </p>
+      </div>
+
+      <p style="margin:0 0 18px; font-size:14px; opacity:0.85;">
+        Unlock date: <em>\${unlockDate}</em>
+      </p>
+
+      <p style="margin:0 0 4px; text-align:center;">
+        <a href="\${magicLink}"
+           style="display:inline-block; padding:12px 28px; border-radius:999px; background:#f5f5f5; color:#000; text-decoration:none; font-size:15px; font-weight:600;">
+          Open Time Capsule
+        </a>
+      </p>
+    </div>
   </div>
 </body>
 </html>
@@ -228,11 +255,12 @@ function generateUnlockEmailHtml(capsule, pin, magicLink, unlockDate) {
 
 function generateUnlockEmailText(capsule, pin, magicLink, unlockDate) {
   return \`
-Your Time Capsule is Unlocked!
+Your Time Capsule is Unlocked
 
-Your time capsule from \${capsule.senderName} is now unlocked: "\${capsule.title}"
+Your time capsule from \${capsule.senderName} is now open: "\${capsule.title}".
 
-Your PIN: \${pin}
+Unlock date: \${unlockDate}
+PIN: \${pin}
 
 Open your capsule: \${magicLink}
   \`;
@@ -242,15 +270,42 @@ function generateSenderNotificationHtml(capsule, whatsappLink) {
   return \`
 <!DOCTYPE html>
 <html>
-<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
-    <h1 style="color: white; margin: 0;">✅ Capsule Unlocked</h1>
-  </div>
-  <div style="padding: 30px; background: #f9f9f9;">
-    <p>Hi \${capsule.senderName},</p>
-    <p>Your time capsule has been unlocked and delivered to <strong>\${capsule.recipientEmail}</strong>.</p>
-    <h2>\${capsule.title}</h2>
-    <p><a href="\${whatsappLink}" style="background: #25D366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px;">📱 Send WhatsApp Reminder</a></p>
+<body style="margin:0; padding:32px 16px; background:#000; color:#f5f5f5; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:640px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:24px;">
+      <h1 style="margin:0 0 8px; font-size:24px; font-weight:700; letter-spacing:0.03em;">
+        Capsule Delivered
+      </h1>
+      <p style="margin:0; font-size:14px; opacity:0.7;">
+        Your message has reached its destination.
+      </p>
+    </div>
+
+    <div style="background:#050509; border:1px solid #1f2933; border-radius:14px; padding:24px 20px;">
+      <p style="margin:0 0 12px; font-size:16px; line-height:1.7;">
+        Hi <em>\${capsule.senderName}</em>,
+      </p>
+
+      <p style="margin:0 0 12px; font-size:15px; line-height:1.7;">
+        Your time capsule has been unlocked and delivered to
+        <em>\${capsule.recipientEmail}</em>.
+      </p>
+
+      <h2 style="margin:4px 0 16px; font-size:20px; font-weight:600;">
+        \${capsule.title}
+      </h2>
+
+      <p style="margin:0 0 10px; font-size:14px; opacity:0.85;">
+        If you'd like, you can gently remind them via WhatsApp:
+      </p>
+
+      <p style="margin:0; text-align:center;">
+        <a href="\${whatsappLink}"
+           style="display:inline-block; padding:10px 22px; border-radius:999px; background:#25D366; color:#000; text-decoration:none; font-size:14px; font-weight:600;">
+          📱 Send WhatsApp Reminder
+        </a>
+      </p>
+    </div>
   </div>
 </body>
 </html>
@@ -263,7 +318,7 @@ Your Time Capsule Has Unlocked
 
 Your time capsule "\${capsule.title}" has been unlocked and delivered to \${capsule.recipientEmail}.
 
-Send WhatsApp reminder: \${whatsappLink}
+Send WhatsApp reminder (optional): \${whatsappLink}
   \`;
 }
 
@@ -274,4 +329,3 @@ main().catch(error => {
 });
 `;
 }
-
