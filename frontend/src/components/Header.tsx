@@ -1,7 +1,7 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,16 +9,27 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { SpinningText } from '@/components/ui/spinning-text';
+} from "@/components/ui/dropdown-menu";
+import { SpinningText } from "@/components/ui/spinning-text";
+import { useState, useEffect } from "react";
 
 export default function Header() {
   const { session, isAuthenticated, clearAuth } = useAuthStore();
   const navigate = useNavigate();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 30);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = () => {
     clearAuth();
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -27,72 +38,100 @@ export default function Header() {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-32 h-32 relative flex items-center justify-center">
-              <SpinningText 
-                className="text-white text-sm font-bold"
-                duration={10}
-                radius={3.5}
-              >
-                Memory Time Capsule
-              </SpinningText>
+              {!isScrolled && (
+                <SpinningText
+                  className="text-white text-sm font-bold"
+                  duration={10}
+                  radius={3.5}
+                >
+                  • Memory • Time • Capsule
+                </SpinningText>
+              )}
             </div>
           </Link>
 
           <nav className="flex items-center gap-6">
             {isAuthenticated() ? (
               <>
-                <Link to="/dashboard" className="text-white/70 hover:text-white">
-                  Dashboard
-                </Link>
-
                 {/* User Menu Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/10">
+                    <Button
+                      variant="ghost"
+                      className="relative h-10 w-10 rounded-full hover:bg-white/10"
+                    >
                       <Avatar>
                         <AvatarImage
                           src={session?.githubAvatar}
-                          alt={session?.githubName || session?.githubLogin || 'User'}
+                          alt={
+                            session?.githubName ||
+                            session?.githubLogin ||
+                            "User"
+                          }
                         />
                         <AvatarFallback className="bg-white text-black">
                           {session?.githubName?.charAt(0).toUpperCase() ||
-                           session?.githubLogin?.charAt(0).toUpperCase() ||
-                           'U'}
+                            session?.githubLogin?.charAt(0).toUpperCase() ||
+                            "U"}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
 
-                  <DropdownMenuContent align="end" className="w-56 bg-black border-white/20">
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-56 bg-black border-white/20"
+                  >
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none text-white">
                           {session?.githubName || session?.githubLogin}
                         </p>
                         <p className="text-xs leading-none text-white/60">
-                          {session?.gmailEmail || session?.githubEmail || 'No email'}
+                          {session?.gmailEmail ||
+                            session?.githubEmail ||
+                            "No email"}
                         </p>
                       </div>
                     </DropdownMenuLabel>
 
                     <DropdownMenuSeparator className="bg-white/10" />
 
-                    <DropdownMenuItem disabled className="cursor-default text-white/60">
+                    <DropdownMenuItem
+                      onClick={() => navigate("/dashboard")}
+                      className="text-white hover:bg-white/10 cursor-pointer"
+                    >
+                      Dashboard
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator className="bg-white/10" />
+
+                    <DropdownMenuItem
+                      disabled
+                      className="cursor-default text-white/60"
+                    >
                       <div className="flex items-center justify-between w-full">
                         <span className="text-xs">GitHub</span>
-                        <span>{session?.githubConnected ? '✅' : '❌'}</span>
+                        <span>{session?.githubConnected ? "✅" : "❌"}</span>
                       </div>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem disabled className="cursor-default text-white/60">
+                    <DropdownMenuItem
+                      disabled
+                      className="cursor-default text-white/60"
+                    >
                       <div className="flex items-center justify-between w-full">
                         <span className="text-xs">Gmail</span>
-                        <span>{session?.gmailConnected ? '✅' : '❌'}</span>
+                        <span>{session?.gmailConnected ? "✅" : "❌"}</span>
                       </div>
                     </DropdownMenuItem>
 
                     <DropdownMenuSeparator className="bg-white/10" />
 
-                    <DropdownMenuItem onClick={handleLogout} className="text-white hover:bg-white/10">
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="text-white hover:bg-white/10"
+                    >
                       Log out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -105,4 +144,3 @@ export default function Header() {
     </header>
   );
 }
-
