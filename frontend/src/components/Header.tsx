@@ -30,7 +30,7 @@ export default function Header() {
               <SpinningText 
                 className="text-white text-sm font-bold"
                 duration={10}
-                radius={4.5}
+                radius={3.5}
               >
                 Memory Time Capsule
               </SpinningText>

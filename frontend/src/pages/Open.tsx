@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, Gift, PackageOpen, PartyPopper } from "lucide-react";
 import { capsuleService } from "@/api/services";
 import type { CapsuleViewResponse, PinVerificationResponse } from "@/api/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import Countdown from "@/components/Countdown";
+import { DrawLineText } from "@/components/gsap/draw-line-text";
+import { SwapCountdown } from "@/components/ui/swap-countdown";
+import { FireworksBackground } from "@/components/animate-ui/components/backgrounds/fireworks";
 import PinInput from "@/components/PinInput";
 import ContentViewer from "@/components/ContentViewer";
 import PreviewContent from "@/components/PreviewContent";
+import { cn } from "@/lib/utils";
 
 type ViewState =
   | "loading"
@@ -31,6 +34,24 @@ export default function Open() {
   const [error, setError] = useState<string | null>(null);
   const [pinError, setPinError] = useState<string | null>(null);
   const [remainingAttempts, setRemainingAttempts] = useState<number>(5);
+  const [timeRemaining, setTimeRemaining] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -41,6 +62,36 @@ export default function Open() {
 
     loadCapsule();
   }, [token]);
+
+  useEffect(() => {
+    if (state !== "countdown" || !capsuleData?.capsule) return;
+
+    const calculateTimeRemaining = () => {
+      const unlockTime = capsuleData.capsule.unlockAt * 1000;
+      const now = Date.now();
+      const diff = unlockTime - now;
+
+      if (diff <= 0) {
+        setTimeRemaining({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        loadCapsule();
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeRemaining({ days, hours, minutes, seconds });
+    };
+
+    calculateTimeRemaining();
+    const interval = setInterval(calculateTimeRemaining, 1000);
+
+    return () => clearInterval(interval);
+  }, [state, capsuleData]);
 
   const loadCapsule = async () => {
     if (!token) return;
@@ -157,45 +208,79 @@ export default function Open() {
   // Countdown state (not yet unlocked)
   if (state === "countdown") {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardContent className="pt-6 text-center">
-              <div className="text-6xl mb-6">🎁</div>
-              <h1 className="text-3xl font-bold mb-4">{capsule.title}</h1>
-              <p className="text-xl text-muted-foreground mb-8">
-                From <strong>{capsule.senderName}</strong>
-              </p>
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+        <FireworksBackground
+          className="absolute inset-0 z-0"
+          population={0.3}
+          color={["#10b981", "#06b6d4", "#6366f1", "#8b5cf6", "#ec4899"]}
+          fireworkSpeed={7}
+        />
+        <div className="container mx-auto px-4 py-16 relative z-10">
+          <div className="max-w-3xl mx-auto">
+            <Card className="bg-transparent border-0 shadow-none">
+              <CardContent className="pt-12 pb-12 text-center">
+                <Gift className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 md:mb-8 text-white animate-pulse" />
 
-              {/* Preview Content (Photo + Message) */}
-              <PreviewContent
-                previewMessage={capsule.previewMessage}
-                previewPhotoUrl={capsuleData?.previewPhotoUrl}
-                className="mb-8"
-              />
+                <div className="flex justify-center mb-6 md:mb-8 px-4">
+                  <div
+                    className={cn(
+                      "max-w-full overflow-hidden",
+                      isMobile && "scale-75 origin-center"
+                    )}
+                  >
+                    <DrawLineText
+                      text={capsule.title}
+                      oneByOne={false}
+                      fontSize={isMobile ? 32 : 48}
+                      strokeWidth={isMobile ? 1.5 : 2}
+                      wordSpacing={isMobile ? 8 : 12}
+                      color="white"
+                    />
+                  </div>
+                </div>
 
-              <Countdown
-                targetDate={new Date(capsule.unlockAt * 1000)}
-                onComplete={loadCapsule}
-              />
-
-              <div className="mt-8 pt-8 border-t">
-                <p className="text-sm text-muted-foreground">
-                  This time capsule will unlock on{" "}
-                  <strong>
-                    {new Date(capsule.unlockAt * 1000).toLocaleString("en-US", {
-                      dateStyle: "full",
-                      timeStyle: "short",
-                    })}
-                  </strong>
+                <p className="text-xl text-white/80 mb-12">
+                  From{" "}
+                  <strong className="text-white">{capsule.senderName}</strong>
                 </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  You'll receive an email with a PIN to open it when the time
-                  comes.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+
+                {/* Preview Content (Photo + Message) */}
+                <PreviewContent
+                  previewMessage={capsule.previewMessage}
+                  previewPhotoUrl={capsuleData?.previewPhotoUrl}
+                  className="mb-12"
+                />
+
+                <SwapCountdown
+                  days={timeRemaining.days}
+                  hours={timeRemaining.hours}
+                  minutes={timeRemaining.minutes}
+                  seconds={timeRemaining.seconds}
+                  blur={true}
+                  className="mb-12"
+                />
+
+                <div className="mt-8 pt-8 border-t border-white/10">
+                  <p className="text-sm text-white/70">
+                    This time capsule will unlock on{" "}
+                    <strong className="text-white">
+                      {new Date(capsule.unlockAt * 1000).toLocaleString(
+                        "en-US",
+                        {
+                          dateStyle: "full",
+                          timeStyle: "short",
+                        }
+                      )}
+                    </strong>
+                  </p>
+                  <p className="text-sm text-white/70 mt-2">
+                    You'll receive an email with a PIN to open it when the time
+                    comes.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -204,50 +289,75 @@ export default function Open() {
   // PIN entry state
   if (state === "pin-entry") {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-md mx-auto">
-          <Card>
-            <CardContent className="pt-6 text-center">
-              <div className="text-6xl mb-6">🔓</div>
-              <h1 className="text-2xl font-bold mb-4">
-                Time Capsule Unlocked!
-              </h1>
-              <p className="text-muted-foreground mb-8">
-                From <strong>{capsule.senderName}</strong>
-              </p>
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+        <FireworksBackground
+          className="absolute inset-0 z-0"
+          population={0.3}
+          color={["#10b981", "#06b6d4", "#6366f1", "#8b5cf6", "#ec4899"]}
+          fireworkSpeed={7}
+        />
+        <div className="container mx-auto px-4 py-16 relative z-10">
+          <div className="max-w-2xl mx-auto">
+            <Card className="bg-transparent border-0 shadow-none">
+              <CardContent className="pt-12 pb-12 text-center">
+                <PackageOpen className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 md:mb-8 text-white animate-bounce" />
 
-              {/* Preview Content (visible during PIN entry too) */}
-              <PreviewContent
-                previewMessage={capsule.previewMessage}
-                previewPhotoUrl={capsuleData?.previewPhotoUrl}
-                className="mb-8"
-              />
+                <div className="flex justify-center mb-6 md:mb-8 px-4">
+                  <div
+                    className={cn(
+                      "max-w-full overflow-hidden",
+                      isMobile && "scale-75 origin-center"
+                    )}
+                  >
+                    <DrawLineText
+                      text={capsule.title}
+                      oneByOne={false}
+                      fontSize={isMobile ? 28 : 40}
+                      strokeWidth={isMobile ? 1.5 : 2}
+                      wordSpacing={isMobile ? 8 : 12}
+                      color="white"
+                    />
+                  </div>
+                </div>
 
-              <p className="text-lg font-medium mb-6">
-                Enter your 4-digit PIN to view
-              </p>
-
-              <PinInput onSubmit={handlePinSubmit} />
-
-              {pinError && (
-                <Alert variant="destructive" className="mt-4">
-                  <AlertDescription>{pinError}</AlertDescription>
-                </Alert>
-              )}
-
-              <p className="text-sm text-muted-foreground mt-4">
-                {remainingAttempts} attempt{remainingAttempts !== 1 ? "s" : ""}{" "}
-                remaining
-              </p>
-
-              <div className="mt-8 pt-8 border-t">
-                <p className="text-sm text-muted-foreground">
-                  Check your email for the PIN. The PIN was sent when this
-                  capsule unlocked.
+                <p className="text-xl text-white/80 mb-8">
+                  From{" "}
+                  <strong className="text-white">{capsule.senderName}</strong>
                 </p>
-              </div>
-            </CardContent>
-          </Card>
+
+                {/* Preview Content (visible during PIN entry too) */}
+                <PreviewContent
+                  previewMessage={capsule.previewMessage}
+                  previewPhotoUrl={capsuleData?.previewPhotoUrl}
+                  className="mb-8"
+                />
+
+                <p className="text-lg font-medium mb-6 text-white">
+                  Enter your 4-digit PIN to view
+                </p>
+
+                <PinInput onSubmit={handlePinSubmit} />
+
+                {pinError && (
+                  <Alert variant="destructive" className="mt-4">
+                    <AlertDescription>{pinError}</AlertDescription>
+                  </Alert>
+                )}
+
+                <p className="text-sm text-white/70 mt-4">
+                  {remainingAttempts} attempt
+                  {remainingAttempts !== 1 ? "s" : ""} remaining
+                </p>
+
+                <div className="mt-8 pt-8 border-t border-white/10">
+                  <p className="text-sm text-white/70">
+                    Check your email for the PIN. The PIN was sent when this
+                    capsule unlocked.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -256,57 +366,81 @@ export default function Open() {
   // Unlocked state (content display)
   if (state === "unlocked" && unlockedData) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center mb-8">
-                <div className="text-6xl mb-4">🎉</div>
-                <h1 className="text-3xl font-bold mb-2">{capsule.title}</h1>
-                <p className="text-muted-foreground">
-                  From <strong>{capsule.senderName}</strong>
-                </p>
-              </div>
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+        <FireworksBackground
+          className="absolute inset-0 z-0"
+          population={0.3}
+          color={["#10b981", "#06b6d4", "#6366f1", "#8b5cf6", "#ec4899"]}
+          fireworkSpeed={7}
+        />
+        <div className="container mx-auto px-4 py-16 relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <Card className="bg-transparent border-0 shadow-none">
+              <CardContent className="pt-12 pb-12">
+                <div className="text-center mb-8">
+                  <PartyPopper className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 md:mb-8 text-white animate-pulse" />
 
-              {/* Preview Content (Photo + Message) */}
-              <PreviewContent
-                previewMessage={capsule.previewMessage}
-                previewPhotoUrl={capsuleData?.previewPhotoUrl}
-                className="mb-8"
-              />
+                  <div className="flex justify-center mb-4 md:mb-6 px-4">
+                    <div
+                      className={cn(
+                        "max-w-full overflow-hidden",
+                        isMobile && "scale-75 origin-center"
+                      )}
+                    >
+                      <DrawLineText
+                        text={capsule.title}
+                        oneByOne={false}
+                        fontSize={isMobile ? 36 : 52}
+                        strokeWidth={isMobile ? 1.5 : 2}
+                        wordSpacing={isMobile ? 8 : 12}
+                        color="white"
+                      />
+                    </div>
+                  </div>
 
-              {/* Main Content */}
-              <div className="mb-8">
-                <ContentViewer
-                  contentType={capsule.contentType}
-                  contentUrl={unlockedData.contentUrl}
-                  textContent={unlockedData.capsule.textContent}
+                  <p className="text-xl text-white/80">
+                    From{" "}
+                    <strong className="text-white">{capsule.senderName}</strong>
+                  </p>
+                </div>
+
+                {/* Preview Content (Photo + Message) */}
+                <PreviewContent
+                  previewMessage={capsule.previewMessage}
+                  previewPhotoUrl={capsuleData?.previewPhotoUrl}
+                  className="mb-8"
                 />
-              </div>
 
-              <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-                <p>
-                  Created on{" "}
-                  {new Date(capsule.createdAt * 1000).toLocaleDateString(
-                    "en-US",
-                    {
-                      dateStyle: "long",
-                    }
-                  )}
-                </p>
-                <p className="mt-1">
-                  Unlocked on{" "}
-                  {new Date(capsule.unlockAt * 1000).toLocaleString(
-                    "en-US",
-                    {
+                {/* Main Content */}
+                <div className="mb-8">
+                  <ContentViewer
+                    contentType={capsule.contentType}
+                    contentUrl={unlockedData.contentUrl}
+                    textContent={unlockedData.capsule.textContent}
+                  />
+                </div>
+
+                <div className="mt-8 pt-8 border-t border-white/10 text-center text-sm text-white/70">
+                  <p>
+                    Created on{" "}
+                    {new Date(capsule.createdAt * 1000).toLocaleDateString(
+                      "en-US",
+                      {
+                        dateStyle: "long",
+                      }
+                    )}
+                  </p>
+                  <p className="mt-1">
+                    Unlocked on{" "}
+                    {new Date(capsule.unlockAt * 1000).toLocaleString("en-US", {
                       dateStyle: "long",
                       timeStyle: "short",
-                    }
-                  )}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+                    })}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
