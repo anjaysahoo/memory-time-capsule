@@ -5,13 +5,11 @@ import { capsuleService } from "@/api/services";
 import type { CapsuleViewResponse, PinVerificationResponse } from "@/api/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { DrawLineText } from "@/components/gsap/draw-line-text";
 import { SwapCountdown } from "@/components/ui/swap-countdown";
 import { FireworksBackground } from "@/components/animate-ui/components/backgrounds/fireworks";
 import PinInput from "@/components/PinInput";
 import ContentViewer from "@/components/ContentViewer";
 import PreviewContent from "@/components/PreviewContent";
-import { cn } from "@/lib/utils";
 
 type ViewState =
   | "loading"
@@ -34,24 +32,12 @@ export default function Open() {
   const [error, setError] = useState<string | null>(null);
   const [pinError, setPinError] = useState<string | null>(null);
   const [remainingAttempts, setRemainingAttempts] = useState<number>(5);
-  const [isMobile, setIsMobile] = useState(false);
 
   // Memoize fireworks colors to prevent re-creating array on every render
   const fireworksColors = useMemo(
     () => ["#10b981", "#06b6d4", "#6366f1", "#8b5cf6", "#ec4899"],
     []
   );
-
-  // Detect mobile viewport
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -196,23 +182,9 @@ export default function Open() {
               <CardContent className="pt-12 pb-12 text-center">
                 <Gift className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 md:mb-8 text-white animate-pulse" />
 
-                <div className="flex justify-center mb-6 md:mb-8 px-4">
-                  <div
-                    className={cn(
-                      "max-w-full overflow-hidden",
-                      isMobile && "scale-75 origin-center"
-                    )}
-                  >
-                    <DrawLineText
-                      text={capsule.title}
-                      oneByOne={false}
-                      fontSize={isMobile ? 32 : 48}
-                      strokeWidth={isMobile ? 1.5 : 2}
-                      wordSpacing={isMobile ? 8 : 12}
-                      color="white"
-                    />
-                  </div>
-                </div>
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 flex flex-wrap items-center justify-center gap-4 animate-pulse">
+                  {capsule.title}
+                </h1>
 
                 <p className="text-xl text-white/80 mb-12">
                   From{" "}
@@ -229,7 +201,7 @@ export default function Open() {
                 <SwapCountdown
                   unlockAt={capsule.unlockAt}
                   onComplete={handleCountdownComplete}
-                  blur={true}
+                  blur={false}
                   className="mb-12"
                 />
 
@@ -275,23 +247,9 @@ export default function Open() {
               <CardContent className="pt-12 pb-12 text-center">
                 <PackageOpen className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 md:mb-8 text-white animate-bounce" />
 
-                <div className="flex justify-center mb-6 md:mb-8 px-4">
-                  <div
-                    className={cn(
-                      "max-w-full overflow-hidden",
-                      isMobile && "scale-75 origin-center"
-                    )}
-                  >
-                    <DrawLineText
-                      text={capsule.title}
-                      oneByOne={false}
-                      fontSize={isMobile ? 28 : 40}
-                      strokeWidth={isMobile ? 1.5 : 2}
-                      wordSpacing={isMobile ? 8 : 12}
-                      color="white"
-                    />
-                  </div>
-                </div>
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 flex flex-wrap items-center justify-center gap-4 animate-pulse">
+                  {capsule.title}
+                </h1>
 
                 <p className="text-xl text-white/80 mb-8">
                   From{" "}
@@ -353,23 +311,9 @@ export default function Open() {
                 <div className="text-center mb-8">
                   <PartyPopper className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 md:mb-8 text-white animate-pulse" />
 
-                  <div className="flex justify-center mb-4 md:mb-6 px-4">
-                    <div
-                      className={cn(
-                        "max-w-full overflow-hidden",
-                        isMobile && "scale-75 origin-center"
-                      )}
-                    >
-                      <DrawLineText
-                        text={capsule.title}
-                        oneByOne={false}
-                        fontSize={isMobile ? 36 : 52}
-                        strokeWidth={isMobile ? 1.5 : 2}
-                        wordSpacing={isMobile ? 8 : 12}
-                        color="white"
-                      />
-                    </div>
-                  </div>
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 flex flex-wrap items-center justify-center gap-4 animate-pulse">
+                    {capsule.title}
+                  </h1>
 
                   <p className="text-xl text-white/80">
                     From{" "}

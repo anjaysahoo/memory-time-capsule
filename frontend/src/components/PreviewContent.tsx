@@ -18,11 +18,11 @@ export default function PreviewContent({
     <div className={`space-y-4 ${className}`}>
       {/* Preview Photo */}
       {previewPhotoUrl && (
-        <div className="rounded-lg overflow-hidden border border-border">
+        <div className="rounded-lg overflow-hidden">
           <img
             src={previewPhotoUrl}
             alt="Preview"
-            className="w-full h-auto max-h-96 object-contain bg-gray-50"
+            className="w-full h-auto max-h-96 object-contain bg-transparent"
             loading="lazy"
           />
         </div>
@@ -30,9 +30,9 @@ export default function PreviewContent({
 
       {/* Preview Message */}
       {previewMessage && (
-        <div className="bg-muted/50 rounded-lg p-4 border border-border">
-          <p className="text-muted-foreground italic text-sm leading-relaxed">
-            {previewMessage}
+        <div className="rounded-lg p-4 bg-transparent">
+          <p className="text-white/70 italic text-base leading-relaxed">
+            "{previewMessage}"
           </p>
         </div>
       )}

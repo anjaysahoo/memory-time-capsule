@@ -43,9 +43,6 @@ export default function Header() {
                 <Link to="/dashboard" className="text-white/70 hover:text-white">
                   Dashboard
                 </Link>
-                <Button asChild variant="outline" className="bg-black text-white border-white/20 hover:bg-white/10">
-                  <Link to="/create">Create Capsule</Link>
-                </Button>
 
                 {/* User Menu Dropdown */}
                 <DropdownMenu>
