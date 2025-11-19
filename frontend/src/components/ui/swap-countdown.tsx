@@ -4,10 +4,12 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 interface SwapCountdownProps extends React.HTMLAttributes<HTMLDivElement> {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
+  days?: number;
+  hours?: number;
+  minutes?: number;
+  seconds?: number;
+  unlockAt?: number; // Unix timestamp in seconds
+  onComplete?: () => void;
   blur?: boolean;
 }
 
@@ -55,14 +57,60 @@ function TimeUnit({ value, label, blur = false }: TimeUnitProps) {
 }
 
 export function SwapCountdown({
-  days,
-  hours,
-  minutes,
-  seconds,
+  days: propDays,
+  hours: propHours,
+  minutes: propMinutes,
+  seconds: propSeconds,
+  unlockAt,
+  onComplete,
   blur = true,
   className,
   ...props
 }: SwapCountdownProps) {
+  const [internalTime, setInternalTime] = React.useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  // Use internal timer if unlockAt is provided, otherwise use props
+  React.useEffect(() => {
+    if (!unlockAt) return;
+
+    const calculateTimeRemaining = () => {
+      const unlockTime = unlockAt * 1000;
+      const now = Date.now();
+      const diff = unlockTime - now;
+
+      if (diff <= 0) {
+        setInternalTime({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        onComplete?.();
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setInternalTime({ days, hours, minutes, seconds });
+    };
+
+    calculateTimeRemaining();
+    const interval = setInterval(calculateTimeRemaining, 1000);
+
+    return () => clearInterval(interval);
+  }, [unlockAt, onComplete]);
+
+  // Use internal time if unlockAt provided, otherwise use props
+  const days = unlockAt !== undefined ? internalTime.days : (propDays ?? 0);
+  const hours = unlockAt !== undefined ? internalTime.hours : (propHours ?? 0);
+  const minutes = unlockAt !== undefined ? internalTime.minutes : (propMinutes ?? 0);
+  const seconds = unlockAt !== undefined ? internalTime.seconds : (propSeconds ?? 0);
+
   return (
     <div
       className={cn('flex gap-3 md:gap-6 justify-center', className)}

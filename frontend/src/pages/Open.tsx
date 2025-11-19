@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Loader2, Gift, PackageOpen, PartyPopper } from "lucide-react";
 import { capsuleService } from "@/api/services";
@@ -34,13 +34,13 @@ export default function Open() {
   const [error, setError] = useState<string | null>(null);
   const [pinError, setPinError] = useState<string | null>(null);
   const [remainingAttempts, setRemainingAttempts] = useState<number>(5);
-  const [timeRemaining, setTimeRemaining] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
   const [isMobile, setIsMobile] = useState(false);
+
+  // Memoize fireworks colors to prevent re-creating array on every render
+  const fireworksColors = useMemo(
+    () => ["#10b981", "#06b6d4", "#6366f1", "#8b5cf6", "#ec4899"],
+    []
+  );
 
   // Detect mobile viewport
   useEffect(() => {
@@ -62,36 +62,6 @@ export default function Open() {
 
     loadCapsule();
   }, [token]);
-
-  useEffect(() => {
-    if (state !== "countdown" || !capsuleData?.capsule) return;
-
-    const calculateTimeRemaining = () => {
-      const unlockTime = capsuleData.capsule.unlockAt * 1000;
-      const now = Date.now();
-      const diff = unlockTime - now;
-
-      if (diff <= 0) {
-        setTimeRemaining({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        loadCapsule();
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setTimeRemaining({ days, hours, minutes, seconds });
-    };
-
-    calculateTimeRemaining();
-    const interval = setInterval(calculateTimeRemaining, 1000);
-
-    return () => clearInterval(interval);
-  }, [state, capsuleData]);
 
   const loadCapsule = async () => {
     if (!token) return;
@@ -121,6 +91,11 @@ export default function Open() {
       setState("error");
       setError(err.response?.data?.message || "Failed to load capsule");
     }
+  };
+
+  const handleCountdownComplete = () => {
+    // Reload capsule data when countdown reaches zero
+    loadCapsule();
   };
 
   const handlePinSubmit = async (pin: string) => {
@@ -212,7 +187,7 @@ export default function Open() {
         <FireworksBackground
           className="absolute inset-0 z-0"
           population={0.3}
-          color={["#10b981", "#06b6d4", "#6366f1", "#8b5cf6", "#ec4899"]}
+          color={fireworksColors}
           fireworkSpeed={7}
         />
         <div className="container mx-auto px-4 py-16 relative z-10">
@@ -252,10 +227,8 @@ export default function Open() {
                 />
 
                 <SwapCountdown
-                  days={timeRemaining.days}
-                  hours={timeRemaining.hours}
-                  minutes={timeRemaining.minutes}
-                  seconds={timeRemaining.seconds}
+                  unlockAt={capsule.unlockAt}
+                  onComplete={handleCountdownComplete}
                   blur={true}
                   className="mb-12"
                 />
@@ -293,7 +266,7 @@ export default function Open() {
         <FireworksBackground
           className="absolute inset-0 z-0"
           population={0.3}
-          color={["#10b981", "#06b6d4", "#6366f1", "#8b5cf6", "#ec4899"]}
+          color={fireworksColors}
           fireworkSpeed={7}
         />
         <div className="container mx-auto px-4 py-16 relative z-10">
@@ -370,7 +343,7 @@ export default function Open() {
         <FireworksBackground
           className="absolute inset-0 z-0"
           population={0.3}
-          color={["#10b981", "#06b6d4", "#6366f1", "#8b5cf6", "#ec4899"]}
+          color={fireworksColors}
           fireworkSpeed={7}
         />
         <div className="container mx-auto px-4 py-16 relative z-10">
