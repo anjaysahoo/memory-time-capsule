@@ -1,3 +1,5 @@
+import { motion } from 'motion/react';
+
 interface PreviewContentProps {
   previewMessage?: string;
   previewPhotoUrl?: string;
@@ -16,16 +18,20 @@ export default function PreviewContent({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Preview Photo */}
+      {/* Preview Photo - with subtle hover zoom */}
       {previewPhotoUrl && (
-        <div className="rounded-lg overflow-hidden border border-border">
+        <motion.div
+          className="rounded-lg overflow-hidden border border-border cursor-pointer"
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
           <img
             src={previewPhotoUrl}
             alt="Preview"
             className="w-full h-auto max-h-96 object-contain bg-gray-50"
             loading="lazy"
           />
-        </div>
+        </motion.div>
       )}
 
       {/* Preview Message */}
@@ -39,4 +45,3 @@ export default function PreviewContent({
     </div>
   );
 }
-

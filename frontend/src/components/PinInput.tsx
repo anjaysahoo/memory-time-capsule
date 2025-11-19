@@ -1,4 +1,5 @@
 import { useState, useRef, KeyboardEvent } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { Input } from "@/components/ui/input";
 
 interface PinInputProps {
@@ -7,6 +8,7 @@ interface PinInputProps {
 
 export default function PinInput({ onSubmit }: PinInputProps) {
   const [pin, setPin] = useState(["", "", "", ""]);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const inputRefs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
@@ -58,21 +60,56 @@ export default function PinInput({ onSubmit }: PinInputProps) {
     }
   };
 
+  // Sparkle positions around the input
+  const sparklePositions = [
+    { top: '-8px', left: '-8px', delay: 0 },
+    { top: '-8px', right: '-8px', delay: 0.1 },
+    { bottom: '-8px', left: '-8px', delay: 0.2 },
+    { bottom: '-8px', right: '-8px', delay: 0.15 }
+  ];
+
   return (
     <div className="flex justify-center gap-3">
       {pin.map((digit, index) => (
-        <Input
-          key={index}
-          ref={inputRefs[index]}
-          type="text"
-          inputMode="numeric"
-          maxLength={1}
-          value={digit}
-          onChange={(e) => handleChange(index, e.target.value)}
-          onKeyDown={(e) => handleKeyDown(index, e)}
-          onPaste={handlePaste}
-          className="w-16 h-16 text-center text-2xl font-bold"
-        />
+        <div key={index} className="relative">
+          {/* Sparkles on focus */}
+          <AnimatePresence>
+            {focusedIndex === index && sparklePositions.map((pos, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-2 h-2 bg-yellow-300 rounded-full pointer-events-none"
+                style={{ ...pos }}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{
+                  opacity: [0, 1, 0],
+                  scale: [0, 1, 0],
+                  rotate: [0, 180]
+                }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{
+                  duration: 0.6,
+                  delay: pos.delay,
+                  repeat: Infinity,
+                  repeatDelay: 0.5
+                }}
+              />
+            ))}
+          </AnimatePresence>
+
+          <Input
+            ref={inputRefs[index]}
+            type="text"
+            inputMode="numeric"
+            maxLength={1}
+            value={digit}
+            onChange={(e) => handleChange(index, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(index, e)}
+            onPaste={handlePaste}
+            onFocus={() => setFocusedIndex(index)}
+            onBlur={() => setFocusedIndex(null)}
+            className="w-16 h-16 text-center text-2xl font-bold"
+          />
+        </div>
       ))}
     </div>
   );
