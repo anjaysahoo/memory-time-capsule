@@ -180,7 +180,7 @@ export default function Open() {
           <div className="max-w-3xl mx-auto">
             <Card className="bg-transparent border-0 shadow-none">
               <CardContent className="pt-12 pb-12 text-center">
-                <Gift className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 md:mb-8 text-white animate-bounce" />
+                <Gift className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 md:mb-8 text-white animate-pulse" />
 
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 flex flex-wrap items-center justify-center gap-4 animate-pulse">
                   {capsule.title}
