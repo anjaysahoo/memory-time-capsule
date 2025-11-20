@@ -119,6 +119,19 @@ function utf8ToBase64(str: string): string {
 }
 
 /**
+ * Convert base64 to UTF-8 string (handles all Unicode characters)
+ */
+function base64ToUtf8(base64: string): string {
+  const binary = atob(base64.replace(/\n/g, ''));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  const decoder = new TextDecoder();
+  return decoder.decode(bytes);
+}
+
+/**
  * Create or update file in repository
  * 
  * @param octokit - Authenticated Octokit client
@@ -174,7 +187,7 @@ export async function getFileContent(
 
     if ('content' in data && typeof data.content === 'string') {
       return {
-        content: atob(data.content.replace(/\n/g, '')),
+        content: base64ToUtf8(data.content),
         sha: data.sha,
       };
     }

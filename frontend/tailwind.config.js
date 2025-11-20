@@ -68,13 +68,21 @@ export default {
   				'-apple-system',
   				'BlinkMacSystemFont',
   				'Segoe UI',
-  				'sans-serif'
+  				'sans-serif',
+  				'Apple Color Emoji',
+  				'Segoe UI Emoji',
+  				'Segoe UI Symbol',
+  				'Noto Color Emoji'
   			],
   			mono: [
   				'JetBrains Mono',
   				'Fira Code',
   				'Consolas',
-  				'monospace'
+  				'monospace',
+  				'Apple Color Emoji',
+  				'Segoe UI Emoji',
+  				'Segoe UI Symbol',
+  				'Noto Color Emoji'
   			]
   		},
   		keyframes: {

@@ -302,165 +302,165 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Section 4: Interactive Demo */}
-      <section className="max-w-5xl mx-auto px-4 py-32 bg-gradient-to-b from-white to-black/5">
-        <motion.h2
-          className="text-4xl md:text-5xl font-bold text-center mb-4"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        >
-          See It In Action
-        </motion.h2>
+      {/*/!* Section 4: Interactive Demo *!/*/}
+      {/*<section className="max-w-5xl mx-auto px-4 py-32 bg-gradient-to-b from-white to-black/5">*/}
+      {/*  <motion.h2*/}
+      {/*    className="text-4xl md:text-5xl font-bold text-center mb-4"*/}
+      {/*    initial={{ opacity: 0, y: 30 }}*/}
+      {/*    whileInView={{ opacity: 1, y: 0 }}*/}
+      {/*    viewport={{ once: true, amount: 0.5 }}*/}
+      {/*    transition={{ duration: 0.5, ease: "easeOut" }}*/}
+      {/*  >*/}
+      {/*    See It In Action*/}
+      {/*  </motion.h2>*/}
 
-        <motion.p
-          className="text-lg md:text-xl text-center text-black/60 mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-        >
-          Click through a sample time capsule journey
-        </motion.p>
+      {/*  <motion.p*/}
+      {/*    className="text-lg md:text-xl text-center text-black/60 mb-8"*/}
+      {/*    initial={{ opacity: 0, y: 20 }}*/}
+      {/*    whileInView={{ opacity: 1, y: 0 }}*/}
+      {/*    viewport={{ once: true, amount: 0.5 }}*/}
+      {/*    transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}*/}
+      {/*  >*/}
+      {/*    Click through a sample time capsule journey*/}
+      {/*  </motion.p>*/}
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
-        >
-          <Card className="p-6 md:p-8 shadow-2xl">
-            <Tabs defaultValue="create" className="w-full" onValueChange={setActiveTab}>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3, delay: 0.2 }}
-              >
-                <TabsList className="grid w-full grid-cols-3 mb-8">
-                  <TabsTrigger value="create" className="transition-all duration-150">
-                    <Upload className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                    Create
-                  </TabsTrigger>
-                  <TabsTrigger value="storage" className="transition-all duration-150">
-                    <Database className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                    Storage
-                  </TabsTrigger>
-                  <TabsTrigger value="delivery" className="transition-all duration-150">
-                    <Mail className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                    Delivery
-                  </TabsTrigger>
-                </TabsList>
-              </motion.div>
+      {/*  <motion.div*/}
+      {/*    initial={{ opacity: 0, scale: 0.95 }}*/}
+      {/*    whileInView={{ opacity: 1, scale: 1 }}*/}
+      {/*    viewport={{ once: true, amount: 0.5 }}*/}
+      {/*    transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}*/}
+      {/*  >*/}
+      {/*    <Card className="p-6 md:p-8 shadow-2xl">*/}
+      {/*      <Tabs defaultValue="create" className="w-full" onValueChange={setActiveTab}>*/}
+      {/*        <motion.div*/}
+      {/*          initial={{ opacity: 0 }}*/}
+      {/*          animate={{ opacity: 1 }}*/}
+      {/*          transition={{ duration: 0.3, delay: 0.2 }}*/}
+      {/*        >*/}
+      {/*          <TabsList className="grid w-full grid-cols-3 mb-8">*/}
+      {/*            <TabsTrigger value="create" className="transition-all duration-150">*/}
+      {/*              <Upload className="w-3 h-3 md:w-4 md:h-4 mr-2" />*/}
+      {/*              Create*/}
+      {/*            </TabsTrigger>*/}
+      {/*            <TabsTrigger value="storage" className="transition-all duration-150">*/}
+      {/*              <Database className="w-3 h-3 md:w-4 md:h-4 mr-2" />*/}
+      {/*              Storage*/}
+      {/*            </TabsTrigger>*/}
+      {/*            <TabsTrigger value="delivery" className="transition-all duration-150">*/}
+      {/*              <Mail className="w-3 h-3 md:w-4 md:h-4 mr-2" />*/}
+      {/*              Delivery*/}
+      {/*            </TabsTrigger>*/}
+      {/*          </TabsList>*/}
+      {/*        </motion.div>*/}
 
-              <AnimatePresence mode="wait">
-                <TabsContent key="create" value="create" className="min-h-[400px] md:min-h-[350px]">
-                  {activeTab === "create" && (
-                    <motion.div
-                      initial={{ opacity: 0, x: 30, scale: 0.97 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: -30 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                    >
-                      {/* Mockup of upload UI */}
-                      <div className="border-2 border-dashed border-black/10 rounded-lg p-12 text-center bg-black/5 hover:border-black/20 transition-colors duration-200">
-                        <motion.div
-                          animate={{
-                            y: [0, -8, 0]
-                          }}
-                          transition={{
-                            duration: 3,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                        >
-                          <FileVideo className="w-16 h-16 mx-auto mb-4 text-black/60" />
-                        </motion.div>
-                        <p className="text-black/60 font-medium mb-2">Upload your content here</p>
-                        <p className="text-sm text-black/60">Videos, photos, audio, or text messages</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </TabsContent>
+      {/*        <AnimatePresence mode="wait">*/}
+      {/*          <TabsContent key="create" value="create" className="min-h-[400px] md:min-h-[350px]">*/}
+      {/*            {activeTab === "create" && (*/}
+      {/*              <motion.div*/}
+      {/*                initial={{ opacity: 0, x: 30, scale: 0.97 }}*/}
+      {/*                animate={{ opacity: 1, x: 0, scale: 1 }}*/}
+      {/*                exit={{ opacity: 0, x: -30 }}*/}
+      {/*                transition={{ duration: 0.3, ease: "easeOut" }}*/}
+      {/*              >*/}
+      {/*                /!* Mockup of upload UI *!/*/}
+      {/*                <div className="border-2 border-dashed border-black/10 rounded-lg p-12 text-center bg-black/5 hover:border-black/20 transition-colors duration-200">*/}
+      {/*                  <motion.div*/}
+      {/*                    animate={{*/}
+      {/*                      y: [0, -8, 0]*/}
+      {/*                    }}*/}
+      {/*                    transition={{*/}
+      {/*                      duration: 3,*/}
+      {/*                      repeat: Infinity,*/}
+      {/*                      ease: "easeInOut"*/}
+      {/*                    }}*/}
+      {/*                  >*/}
+      {/*                    <FileVideo className="w-16 h-16 mx-auto mb-4 text-black/60" />*/}
+      {/*                  </motion.div>*/}
+      {/*                  <p className="text-black/60 font-medium mb-2">Upload your content here</p>*/}
+      {/*                  <p className="text-sm text-black/60">Videos, photos, audio, or text messages</p>*/}
+      {/*                </div>*/}
+      {/*              </motion.div>*/}
+      {/*            )}*/}
+      {/*          </TabsContent>*/}
 
-                <TabsContent key="storage" value="storage" className="min-h-[400px] md:min-h-[350px]">
-                  {activeTab === "storage" && (
-                    <motion.div
-                      initial={{ opacity: 0, x: 30, scale: 0.97 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: -30 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                    >
-                      {/* Mockup of GitHub repo */}
-                      <motion.div
-                        className="bg-black/5 rounded-lg p-8"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
-                      >
-                        <Github className="w-12 h-12 mb-4 text-black" />
-                        <p className="font-mono text-sm mb-2">capsules/birthday-message.mp4</p>
-                        <p className="text-sm text-black/60">Stored securely in your private GitHub repository</p>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </TabsContent>
+      {/*          <TabsContent key="storage" value="storage" className="min-h-[400px] md:min-h-[350px]">*/}
+      {/*            {activeTab === "storage" && (*/}
+      {/*              <motion.div*/}
+      {/*                initial={{ opacity: 0, x: 30, scale: 0.97 }}*/}
+      {/*                animate={{ opacity: 1, x: 0, scale: 1 }}*/}
+      {/*                exit={{ opacity: 0, x: -30 }}*/}
+      {/*                transition={{ duration: 0.3, ease: "easeOut" }}*/}
+      {/*              >*/}
+      {/*                /!* Mockup of GitHub repo *!/*/}
+      {/*                <motion.div*/}
+      {/*                  className="bg-black/5 rounded-lg p-8"*/}
+      {/*                  initial={{ opacity: 0, scale: 0.8 }}*/}
+      {/*                  animate={{ opacity: 1, scale: 1 }}*/}
+      {/*                  transition={{ duration: 0.4, ease: "easeOut" }}*/}
+      {/*                >*/}
+      {/*                  <Github className="w-12 h-12 mb-4 text-black" />*/}
+      {/*                  <p className="font-mono text-sm mb-2">capsules/birthday-message.mp4</p>*/}
+      {/*                  <p className="text-sm text-black/60">Stored securely in your private GitHub repository</p>*/}
+      {/*                </motion.div>*/}
+      {/*              </motion.div>*/}
+      {/*            )}*/}
+      {/*          </TabsContent>*/}
 
-                <TabsContent key="delivery" value="delivery" className="min-h-[400px] md:min-h-[350px]">
-                  {activeTab === "delivery" && (
-                    <motion.div
-                      initial={{ opacity: 0, x: 30, scale: 0.97 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: -30 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                    >
-                      {/* Mockup of Gmail */}
-                      <motion.div
-                        className="bg-white border rounded-lg p-8 shadow-sm"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
-                      >
-                        <motion.div
-                          animate={{
-                            scale: [1, 1.05, 1]
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                        >
-                          <Mail className="w-12 h-12 mb-4 text-black" />
-                        </motion.div>
-                        <h4 className="font-bold mb-2">You have a Time Capsule!</h4>
-                        <p className="text-sm text-black/60">
-                          A message from the past is ready to open...
-                        </p>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </TabsContent>
-              </AnimatePresence>
-            </Tabs>
+      {/*          <TabsContent key="delivery" value="delivery" className="min-h-[400px] md:min-h-[350px]">*/}
+      {/*            {activeTab === "delivery" && (*/}
+      {/*              <motion.div*/}
+      {/*                initial={{ opacity: 0, x: 30, scale: 0.97 }}*/}
+      {/*                animate={{ opacity: 1, x: 0, scale: 1 }}*/}
+      {/*                exit={{ opacity: 0, x: -30 }}*/}
+      {/*                transition={{ duration: 0.3, ease: "easeOut" }}*/}
+      {/*              >*/}
+      {/*                /!* Mockup of Gmail *!/*/}
+      {/*                <motion.div*/}
+      {/*                  className="bg-white border rounded-lg p-8 shadow-sm"*/}
+      {/*                  initial={{ opacity: 0 }}*/}
+      {/*                  animate={{ opacity: 1 }}*/}
+      {/*                  transition={{ duration: 0.4, ease: "easeOut" }}*/}
+      {/*                >*/}
+      {/*                  <motion.div*/}
+      {/*                    animate={{*/}
+      {/*                      scale: [1, 1.05, 1]*/}
+      {/*                    }}*/}
+      {/*                    transition={{*/}
+      {/*                      duration: 2,*/}
+      {/*                      repeat: Infinity,*/}
+      {/*                      ease: "easeInOut"*/}
+      {/*                    }}*/}
+      {/*                  >*/}
+      {/*                    <Mail className="w-12 h-12 mb-4 text-black" />*/}
+      {/*                  </motion.div>*/}
+      {/*                  <h4 className="font-bold mb-2">You have a Time Capsule!</h4>*/}
+      {/*                  <p className="text-sm text-black/60">*/}
+      {/*                    A message from the past is ready to open...*/}
+      {/*                  </p>*/}
+      {/*                </motion.div>*/}
+      {/*              </motion.div>*/}
+      {/*            )}*/}
+      {/*          </TabsContent>*/}
+      {/*        </AnimatePresence>*/}
+      {/*      </Tabs>*/}
 
-            {/* Progress dots */}
-            <div className="flex gap-2 justify-center mt-6">
-              {["create", "storage", "delivery"].map((tab) => (
-                <motion.div
-                  key={tab}
-                  className="w-2 h-2 rounded-full"
-                  animate={{
-                    scale: activeTab === tab ? 1.4 : 1,
-                    backgroundColor: activeTab === tab ? "#000000" : "#F5F5F5"
-                  }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                />
-              ))}
-            </div>
-          </Card>
-        </motion.div>
-      </section>
+      {/*      /!* Progress dots *!/*/}
+      {/*      <div className="flex gap-2 justify-center mt-6">*/}
+      {/*        {["create", "storage", "delivery"].map((tab) => (*/}
+      {/*          <motion.div*/}
+      {/*            key={tab}*/}
+      {/*            className="w-2 h-2 rounded-full"*/}
+      {/*            animate={{*/}
+      {/*              scale: activeTab === tab ? 1.4 : 1,*/}
+      {/*              backgroundColor: activeTab === tab ? "#000000" : "#F5F5F5"*/}
+      {/*            }}*/}
+      {/*            transition={{ duration: 0.3, ease: "easeOut" }}*/}
+      {/*          />*/}
+      {/*        ))}*/}
+      {/*      </div>*/}
+      {/*    </Card>*/}
+      {/*  </motion.div>*/}
+      {/*</section>*/}
 
       {/* Section 5: Features Grid */}
       <section className="max-w-6xl mx-auto px-4 py-24 bg-white">
